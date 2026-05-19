@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a08;
+  --surface:#111110;
+  --border:#1e1e1c;
+  --border2:#2a2a28;
+  --accent:#c8f060;
+  --accent-dim:#8faa3c;
+  --accent-bg:#c8f06014;
+  --text:#e8e8e2;
+  --text-muted:#666660;
+  --text-dim:#333330;
+  --red:#ff6060;
+  --yellow:#f0c040;
+  --font-d:'Instrument Serif',serif;
+  --font-m:'DM Mono',monospace;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-m);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:32px 32px;opacity:0.35;pointer-events:none;z-index:0;
+}
+
+.screen{display:none}
+[data-screen="onboarding"] #screen-onboarding,
+[data-screen="dashboard"]  #screen-dashboard{display:block}
+
+/* ── ONBOARDING ─────────────────────────────────────────────────────────── */
+
+#screen-onboarding{
+  position:relative;z-index:1;min-height:100vh;
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 24px;
+}
+.ob-inner{max-width:440px;width:100%;text-align:center}
+.ob-tag{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:56px}
+.ob-q{font-family:var(--font-d);font-style:italic;font-size:clamp(2rem,5vw,3rem);line-height:1.15;margin-bottom:10px}
+.ob-sub{font-size:.72rem;color:var(--text-muted);margin-bottom:44px}
+
+#ob-name{
+  background:transparent;border:none;border-bottom:1px solid var(--border2);
+  color:var(--text);font-family:var(--font-d);font-style:italic;font-size:1.5rem;
+  text-align:center;width:100%;padding:8px 0;outline:none;transition:border-color 200ms;
+}
+#ob-name:focus{border-bottom-color:var(--accent)}
+#ob-name::placeholder{color:var(--text-dim)}
+
+#ob-btn{
+  margin-top:40px;background:var(--accent);color:var(--bg);border:none;
+  font-family:var(--font-m);font-size:.72rem;font-weight:500;letter-spacing:.1em;
+  text-transform:uppercase;padding:13px 36px;cursor:pointer;transition:opacity 150ms;
+}
+#ob-btn:hover{opacity:.85}
+#ob-btn:active{opacity:.7}
+#ob-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ── DASHBOARD ──────────────────────────────────────────────────────────── */
+
+#screen-dashboard{
+  position:relative;z-index:1;max-width:1300px;margin:0 auto;
+  padding:0 28px 100px;
+}
+
+/* Header */
+.dash-hdr{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:40px 0 28px;border-bottom:1px solid var(--border);
+}
+#dash-title{font-family:var(--font-d);font-size:clamp(1.5rem,3vw,2.25rem);font-weight:400}
+#saved-ind{
+  font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);opacity:0;transition:opacity 300ms;
+}
+#saved-ind.on{opacity:1}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin:28px 0}
+.mc{background:var(--bg);padding:24px 20px}
+.mc-lbl{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+.mc-val{font-family:var(--font-d);font-size:clamp(1.6rem,2.8vw,2.4rem);line-height:1;color:var(--text)}
+.mc.neg .mc-val{color:var(--red)}
+
+/* Progress */
+.prog-section{margin-bottom:32px}
+.prog-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+#prog-pct{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+#status-chip{
+  font-size:.62rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 10px;border:1px solid;transition:color 300ms,border-color 300ms;
+}
+#status-chip[data-s="on-track"]{color:var(--accent)}
+#status-chip[data-s="tight"]{color:var(--yellow)}
+#status-chip[data-s="not-feasible"]{color:var(--red)}
+.prog-track{height:2px;background:var(--border2);overflow:hidden}
+#prog-fill{height:100%;background:var(--accent);width:0%;transition:width 600ms cubic-bezier(.4,0,.2,1)}
+
+/* Main grid */
+.main-grid{display:grid;grid-template-columns:420px 1fr;gap:52px;align-items:start;margin-top:40px}
+
+/* Section headings */
+.s-hd{
+  font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:14px;padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.inp-section{margin-bottom:36px}
+
+/* Debt cards */
+.debt-card{
+  border:1px solid var(--border);background:var(--surface);
+  padding:16px;margin-bottom:6px;
+  opacity:0;transform:translateY(-6px);
+  transition:opacity 220ms ease,transform 220ms ease,border-color 200ms;
+}
+.debt-card.in{opacity:1;transform:none}
+.debt-card.out{opacity:0;transform:translateY(-6px)}
+.debt-card.paid-off{border-color:var(--accent-dim)}
+
+.dc-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dc-label{flex:1;font-family:var(--font-m);font-size:.83rem;font-weight:500}
+.dc-rm{
+  background:transparent;border:none;color:var(--text-dim);
+  font-size:.7rem;cursor:pointer;padding:4px;line-height:1;
+  transition:color 150ms;flex-shrink:0;
+}
+.dc-rm:hover{color:var(--red)}
+.dc-rm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dc-type-row{margin-bottom:10px}
+.dc-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg-full{grid-column:1/-1}
+.fg-lbl{font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+.fg-val{font-family:var(--font-m);font-size:.78rem;color:var(--text-dim)}
+
+.apr-row{display:flex;align-items:center;gap:8px}
+.apr-num{width:56px}
+.apr-slider{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:2px;background:var(--border2);outline:none;cursor:pointer;
+}
+.apr-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:13px;height:13px;
+  background:var(--accent);cursor:pointer;border-radius:0;
+  transition:transform 150ms;
+}
+.apr-slider:hover::-webkit-slider-thumb{transform:scale(1.3)}
+.apr-slider::-moz-range-thumb{width:13px;height:13px;background:var(--accent);border:none;cursor:pointer;border-radius:0}
+
+.paid-badge{margin-top:10px;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+
+/* Inline inputs */
+.ii{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  color:var(--text);font-family:var(--font-m);font-size:.8rem;
+  outline:none;width:100%;padding:2px 0;transition:border-color 200ms;
+}
+.ii:focus{border-bottom-color:var(--accent)}
+.ii::placeholder{color:var(--text-dim)}
+.ii.ra{text-align:right}
+.ii:focus-visible{outline:none}
+
+.sym{display:flex;align-items:center;gap:2px}
+.sym>span{font-size:.72rem;color:var(--text-muted);flex-shrink:0}
+.sym>span.dim{color:var(--text-dim)}
+.sym .ii{flex:1}
+
+/* Custom select */
+.cs{
+  background:var(--bg);border:1px solid var(--border);color:var(--text-muted);
+  font-family:var(--font-m);font-size:.68rem;letter-spacing:.04em;
+  padding:5px 26px 5px 9px;outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;color-scheme:dark;
+  background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666660' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  transition:border-color 200ms,color 200ms;
+}
+.cs:focus{border-color:var(--accent);color:var(--text)}
+.cs:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cs option{background:#1c1c1a;color:var(--text)}
+
+/* Dynamic rows */
+.drow{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 0;border-bottom:1px solid var(--border);
+  opacity:0;transition:opacity 200ms;
+}
+.drow.in{opacity:1}
+.drow.out{opacity:0}
+.drow-rm{
+  background:transparent;border:none;color:var(--text-dim);
+  font-size:.68rem;cursor:pointer;padding:4px;transition:color 150ms;flex-shrink:0;
+}
+.drow-rm:hover{color:var(--red)}
+.drow-rm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Salary row */
+.sal-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.sal-row label{flex:1;font-size:.78rem;color:var(--text-muted)}
+
+/* Add buttons */
+.add-btn{
+  background:transparent;border:1px dashed var(--border2);color:var(--text-muted);
+  font-family:var(--font-m);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:10px 16px;width:100%;cursor:pointer;margin-top:6px;
+  transition:border-color 200ms,color 200ms;
+}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Table column */
+.tbl-col{position:relative}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tab-btn{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--text-muted);font-family:var(--font-m);font-size:.62rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:9px 14px;cursor:pointer;margin-bottom:-1px;
+  transition:color 150ms,border-color 150ms;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.act{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+.tbl-wrap{
+  position:relative;max-height:520px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+}
+.tbl-wrap::-webkit-scrollbar{width:3px}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border2)}
+
+.tbl-fade{
+  position:absolute;bottom:0;left:0;right:0;height:48px;
+  background:linear-gradient(transparent,var(--bg));pointer-events:none;
+}
+
+table{width:100%;border-collapse:collapse;font-size:.73rem}
+thead th{
+  position:sticky;top:0;background:var(--bg);
+  padding:9px 12px;text-align:left;font-size:.56rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:400;
+}
+thead th.r{text-align:right}
+tbody tr{border-bottom:1px solid var(--border);transition:background 120ms}
+tbody tr:hover{background:var(--surface)}
+tbody tr.cur{background:var(--accent-bg)}
+td{padding:7px 12px;color:var(--text)}
+td.r{text-align:right;font-variant-numeric:tabular-nums}
+td.int{color:var(--text-muted)}
+td.bal{font-weight:500}
+.tbl-empty{text-align:center;color:var(--text-dim);padding:48px 24px;font-size:.72rem}
+
+/* Phases */
+.phases{margin-top:64px;border-top:1px solid var(--border);padding-top:32px}
+.phases-hd{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px}
+.phases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+
+.ph-card{background:var(--bg)}
+.ph-card summary{
+  list-style:none;padding:20px 22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;user-select:none;
+}
+.ph-card summary::-webkit-details-marker{display:none}
+.ph-num{font-family:var(--font-d);font-style:italic;font-size:1.4rem;color:var(--text-dim)}
+.ph-ttl{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-top:2px}
+.ph-chev{font-size:.58rem;color:var(--text-dim);transition:transform 200ms}
+details[open] .ph-chev{transform:rotate(180deg)}
+.ph-body{padding:0 22px 22px;border-top:1px solid var(--border)}
+.ph-body ul{list-style:none;margin-top:14px}
+.ph-body li{
+  font-size:.72rem;color:var(--text-muted);
+  padding:6px 0 6px 14px;border-bottom:1px solid var(--border);position:relative;
+}
+.ph-body li::before{content:'—';position:absolute;left:0;color:var(--text-dim)}
+.ph-body li:last-child{border-bottom:none}
+
+/* Focus */
+*:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Responsive */
+@media(max-width:980px){
+  .main-grid{grid-template-columns:1fr;gap:40px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .phases-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  #screen-dashboard{padding:0 16px 60px}
+  .mc{padding:16px}
+  .main-grid{margin-top:28px}
+}
+
+input[type="month"]{color-scheme:dark}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type="number"]{-moz-appearance:textfield}
+</style>
+</head>
+<body data-screen="onboarding">
+
+<!-- ── SCREEN 1: ONBOARDING ──────────────────────────────────────────────── -->
+<div id="screen-onboarding" class="screen">
+  <div class="ob-inner">
+    <p class="ob-tag">Debt Tracker</p>
+    <h1 class="ob-q">What's your name?</h1>
+    <p class="ob-sub">First name is fine.</p>
+    <input id="ob-name" type="text" placeholder="Your name" autocomplete="given-name" aria-label="Your name">
+    <br>
+    <button id="ob-btn">Let's get to work →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN 2: DASHBOARD ───────────────────────────────────────────────── -->
+<div id="screen-dashboard" class="screen">
+
+  <header class="dash-hdr">
+    <h1 id="dash-title">Your tracker.</h1>
+    <span id="saved-ind" aria-live="polite">● Saved</span>
+  </header>
+
+  <div class="metrics" role="region" aria-label="Summary metrics">
+    <div class="mc"><div class="mc-lbl">Total Debt Remaining</div><div class="mc-val" id="m-bal" data-v="0">—</div></div>
+    <div class="mc"><div class="mc-lbl">Required Payment / Mo</div><div class="mc-val" id="m-pay" data-v="0">—</div></div>
+    <div class="mc"><div class="mc-lbl">Total Interest Owed</div><div class="mc-val" id="m-int" data-v="0">—</div></div>
+    <div class="mc"><div class="mc-lbl">Monthly Surplus</div><div class="mc-val" id="m-sur" data-v="0">—</div></div>
+  </div>
+
+  <div class="prog-section">
+    <div class="prog-hdr">
+      <span id="prog-pct">0% cleared</span>
+      <span id="status-chip" data-s="not-feasible">● NOT FEASIBLE</span>
+    </div>
+    <div class="prog-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div id="prog-fill"></div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- INPUTS -->
+    <div class="inputs-col">
+
+      <div class="inp-section">
+        <div class="s-hd">Debts</div>
+        <div id="debts-list" aria-label="Debt list"></div>
+        <button id="add-debt" class="add-btn">+ Add Debt</button>
+      </div>
+
+      <div class="inp-section">
+        <div class="s-hd">Monthly Income</div>
+        <div class="sal-row">
+          <label for="sal-inp">Take-home salary</label>
+          <div class="sym">
+            <span>$</span>
+            <input id="sal-inp" type="number" class="ii ra" placeholder="0" min="0" step="0.01"
+                   inputmode="decimal" aria-label="Monthly take-home salary" style="width:100px">
+            <span class="dim">/mo</span>
+          </div>
+        </div>
+        <div id="income-list" aria-label="Additional income sources"></div>
+        <button id="add-income" class="add-btn">+ Add Income Source</button>
+      </div>
+
+      <div class="inp-section">
+        <div class="s-hd">Monthly Expenses</div>
+        <div id="expense-list" aria-label="Monthly expenses"></div>
+        <button id="add-expense" class="add-btn">+ Add Expense</button>
+      </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="tbl-col">
+      <div class="s-hd">Payoff Schedule</div>
+      <div class="tab-bar" id="tab-bar" role="tablist"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col" class="r">Payment</th>
+              <th scope="col" class="r">Interest</th>
+              <th scope="col" class="r">Principal</th>
+              <th scope="col" class="r">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body">
+            <tr><td colspan="5" class="tbl-empty">Add a debt to see your payoff schedule.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-fade"></div>
+    </div>
+
+  </div>
+
+  <section class="phases" aria-label="Roadmap phases">
+    <div class="phases-hd">Your Roadmap</div>
+    <div class="phases-grid">
+
+      <details class="ph-card">
+        <summary>
+          <div><div class="ph-num">01</div><div class="ph-ttl">Job Searching</div></div>
+          <span class="ph-chev" aria-hidden="true">▼</span>
+        </summary>
+        <div class="ph-body">
+          <ul>
+            <li>Make minimum payments only — preserve every dollar while unemployed</li>
+            <li>Any freelance or gig income goes straight to the highest-APR debt first</li>
+            <li>Audit every subscription and cancel anything non-essential today</li>
+            <li>Track applications in a spreadsheet — 5 quality apps/week beats 50 sprays</li>
+            <li>When you get an offer, negotiate — even $5k more is hundreds toward debt</li>
+            <li>Ask about signing bonuses; entry-level tech roles sometimes offer $5–15k</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="ph-card">
+        <summary>
+          <div><div class="ph-num">02</div><div class="ph-ttl">First Paycheck</div></div>
+          <span class="ph-chev" aria-hidden="true">▼</span>
+        </summary>
+        <div class="ph-body">
+          <ul>
+            <li>Set up an auto-transfer on payday — pay debt before you see the money</li>
+            <li>Update your salary here and lock in the required monthly payment amount</li>
+            <li>Build a $1,000 emergency fund first so unexpected costs don't spiral debt</li>
+            <li>Cancel any trials you signed up for during the job search</li>
+            <li>Optimize your W-4 withholdings to avoid a surprise tax bill in April</li>
+            <li>Start tracking net worth monthly — watching it rise is genuinely motivating</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="ph-card">
+        <summary>
+          <div><div class="ph-num">03</div><div class="ph-ttl">Final Push</div></div>
+          <span class="ph-chev" aria-hidden="true">▼</span>
+        </summary>
+        <div class="ph-body">
+          <ul>
+            <li>Every tax refund, bonus, and windfall goes directly to remaining balance</li>
+            <li>Avalanche method: once a debt hits $0, roll its payment to the next one</li>
+            <li>Set milestones at 25%, 50%, 75% — small free rewards keep you going</li>
+            <li>Cut all discretionary for the final 90 days if the finish line is close</li>
+            <li>Visualize a specific day in December as your debt-free date — make it real</li>
+            <li>Decide now what you'll do with that freed monthly cash flow afterward</li>
+          </ul>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+
+const uid = () => Math.random().toString(36).slice(2,9);
+
+const fmt = (n, d=0) => isNaN(n)||n==null ? '—'
+  : new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+const nowMM = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+};
+
+const monthLabel = mm => {
+  const [y,m] = mm.split('-').map(Number);
+  return new Date(y,m-1).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+};
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+
+const KEY = 'debtTracker_v1';
+const DEF = {
+  userName:'', globalTarget:'2026-12',
+  debts:[], salary:0, income:[], expenses:[]
+};
+
+let S;
+
+function load() {
+  try { const r = localStorage.getItem(KEY); return r ? {...DEF,...JSON.parse(r)} : {...DEF}; }
+  catch { return {...DEF}; }
+}
+
+let _st;
+function scheduleSave() {
+  clearTimeout(_st);
+  _st = setTimeout(()=>{
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
+    flashSaved();
+  }, 800);
+}
+
+/* ── Math ─────────────────────────────────────────────────────────────────── */
+
+function monthsUntil(yyyymm) {
+  if (!yyyymm) return 1;
+  const n = new Date(), [y,m] = yyyymm.split('-').map(Number);
+  return Math.max(1, (y-n.getFullYear())*12 + (m-1-n.getMonth()));
+}
+
+function calcDebt(debt) {
+  const b = +debt.balance || 0;
+  if (b <= 0) return {pmt:0, totalInt:0, rows:[]};
+  const n = monthsUntil(debt.target || S.globalTarget);
+  const r = ((+debt.apr||0)/100)/12;
+  const pmt = r===0 ? b/n : b*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+  const totalInt = Math.max(0, pmt*n-b);
+  const rows = [];
+  let rem = b;
+  const now = new Date();
+  for (let i=0; i<n && rem>0.005; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth()+i+1, 1);
+    const mm = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const int = rem*r, pri = Math.min(pmt-int, rem);
+    rem = Math.max(0, rem-pri);
+    rows.push({mm, pmt:int+pri, int, pri, bal:rem});
+  }
+  return {pmt, totalInt, rows};
+}
+
+function calcAll() {
+  const dr = S.debts.map(d => ({d, ...calcDebt(d)}));
+  const totOrig = S.debts.reduce((s,d)=>s+(+d.origBal||0), 0);
+  const totBal  = S.debts.reduce((s,d)=>s+(+d.balance||0), 0);
+  const totPmt  = dr.reduce((s,r)=>s+r.pmt, 0);
+  const totInt  = dr.reduce((s,r)=>s+r.totalInt, 0);
+  const totInc  = (+S.salary||0) + S.income.reduce((s,i)=>s+(+i.amt||0),0);
+  const totExp  = S.expenses.reduce((s,e)=>s+(+e.amt||0),0);
+  const surplus = totInc - totExp - totPmt;
+  const pct = totOrig>0 ? Math.max(0,Math.min(1,1-totBal/totOrig)) : 0;
+  let status = 'not-feasible';
+  if (totInc>0) { if (surplus>0.2*totInc) status='on-track'; else if (surplus>0) status='tight'; }
+
+  // Combined schedule
+  const map = {};
+  dr.forEach(({rows})=>rows.forEach(r=>{
+    if (!map[r.mm]) map[r.mm]={pmt:0,int:0,pri:0};
+    map[r.mm].pmt+=r.pmt; map[r.mm].int+=r.int; map[r.mm].pri+=r.pri;
+  }));
+  let rb = totBal;
+  const combined = Object.keys(map).sort().map(mm=>{
+    const row=map[mm]; rb=Math.max(0,rb-row.pri);
+    return {mm, ...row, bal:rb};
+  });
+
+  return {dr, totOrig, totBal, totPmt, totInt, totInc, totExp, surplus, pct, status, combined};
+}
+
+/* ── Counter animation ────────────────────────────────────────────────────── */
+
+function counter(el, val, signed) {
+  const prev = parseFloat(el.dataset.v)||0;
+  el.dataset.v = isNaN(val) ? 0 : val;
+  if (val==null||isNaN(val)) { el.textContent='—'; return; }
+  const t0 = performance.now(), dur=380;
+  (function tick(now) {
+    const t = Math.min(1,(now-t0)/dur), e = 1-Math.pow(1-t,3);
+    const cur = prev+(val-prev)*e;
+    if (signed) {
+      el.textContent = (cur>=0?'+$':'-$')+fmt(Math.abs(cur),2);
+    } else {
+      el.textContent = '$'+fmt(cur,2);
+    }
+    if (t<1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+/* ── Saved flash ──────────────────────────────────────────────────────────── */
+
+let _sv;
+function flashSaved() {
+  const el = document.getElementById('saved-ind');
+  el.classList.add('on');
+  clearTimeout(_sv);
+  _sv = setTimeout(()=>el.classList.remove('on'), 2000);
+}
+
+/* ── Screen ───────────────────────────────────────────────────────────────── */
+
+function show(name) { document.body.dataset.screen = name; }
+
+/* ── Render ───────────────────────────────────────────────────────────────── */
+
+let activeTab = 'all', R;
+
+function render() {
+  R = calcAll();
+  renderMetrics(); renderProgress(); renderDebts();
+  renderIncome(); renderExpenses(); renderTable();
+}
+
+function renderMetrics() {
+  const {totBal,totPmt,totInt,surplus,totInc} = R;
+  const hasData = totBal>0||totPmt>0;
+  if (hasData) {
+    counter(document.getElementById('m-bal'), totBal);
+    counter(document.getElementById('m-pay'), totPmt);
+    counter(document.getElementById('m-int'), totInt);
+  } else {
+    ['m-bal','m-pay','m-int'].forEach(id=>{ document.getElementById(id).textContent='—'; });
+  }
+  const se = document.getElementById('m-sur');
+  if (totInc>0 || surplus!==0) {
+    counter(se, surplus, true);
+    se.closest('.mc').classList.toggle('neg', surplus<0);
+  } else {
+    se.textContent='—';
+    se.closest('.mc').classList.remove('neg');
+  }
+}
+
+function renderProgress() {
+  const {pct, status} = R, p = Math.round(pct*100);
+  const fill = document.getElementById('prog-fill');
+  fill.style.width = p+'%';
+  fill.closest('[role="progressbar"]').setAttribute('aria-valuenow', p);
+  document.getElementById('prog-pct').textContent = p+'% cleared';
+  const chip = document.getElementById('status-chip');
+  chip.dataset.s = status;
+  chip.textContent = {
+    'on-track':'● ON TRACK','tight':'● TIGHT','not-feasible':'● NOT FEASIBLE'
+  }[status];
+}
+
+const T_ICON  = {credit_card:'💳',student_loan:'🎓',bnpl:'🛍',personal:'👤',other:'○'};
+const T_LABEL = {credit_card:'Credit Card',student_loan:'Student Loan',bnpl:'BNPL',personal:'Personal',other:'Other'};
+const T_PH    = {credit_card:'e.g. Chase Sapphire',student_loan:'e.g. Navient',bnpl:'e.g. Klarna',personal:'e.g. Personal Loan',other:'e.g. Medical Bill'};
+
+function renderDebts() {
+  const c = document.getElementById('debts-list');
+  const exIds = new Set([...c.querySelectorAll('.debt-card')].map(el=>el.dataset.id));
+  const stIds = new Set(S.debts.map(d=>d.id));
+  // remove deleted
+  [...c.querySelectorAll('.debt-card')].forEach(el=>{
+    if (!stIds.has(el.dataset.id)) { el.classList.add('out'); setTimeout(()=>el.remove(),220); }
+  });
+  // add new
+  S.debts.forEach(debt=>{
+    if (!exIds.has(debt.id)) {
+      const card = mkDebtCard(debt);
+      c.appendChild(card);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.add('in')));
+    }
+  });
+  renderTabs();
+}
+
+function mkDebtCard(debt) {
+  const card = document.createElement('div');
+  card.className = 'debt-card';
+  card.dataset.id = debt.id;
+  const b = +debt.balance||0, ob = +debt.origBal||0;
+  if (b<=0 && ob>0) card.classList.add('paid-off');
+
+  const opts = Object.entries(T_LABEL).map(([v,l])=>
+    `<option value="${v}"${v===debt.type?' selected':''}>${T_ICON[v]} ${l}</option>`).join('');
+
+  card.innerHTML = `
+    <div class="dc-hdr">
+      <input class="dc-label ii" type="text" value="${esc(debt.label)}"
+             placeholder="${esc(T_PH[debt.type]||'Debt name')}" aria-label="Debt name">
+      <button class="dc-rm" aria-label="Remove debt">✕</button>
+    </div>
+    <div class="dc-type-row">
+      <select class="debt-type cs" aria-label="Debt type">${opts}</select>
+    </div>
+    <div class="dc-fields">
+      <div class="fg">
+        <span class="fg-lbl">STARTED AT</span>
+        <span class="fg-val orig-val">$${fmt(ob,2)}</span>
+      </div>
+      <div class="fg">
+        <span class="fg-lbl">CURRENT BALANCE</span>
+        <div class="sym">
+          <span>$</span>
+          <input type="number" class="debt-bal ii ra"
+                 value="${b||''}" placeholder="0.00" min="0" step="0.01"
+                 inputmode="decimal" aria-label="Current balance">
+        </div>
+      </div>
+      <div class="fg fg-full">
+        <span class="fg-lbl">APR — <span class="apr-disp">${(+debt.apr||0).toFixed(2)}%</span></span>
+        <div class="apr-row">
+          <input type="number" class="apr-num ii" value="${+debt.apr||''}"
+                 placeholder="0.00" min="0" max="36" step="0.01"
+                 inputmode="decimal" aria-label="APR percent">
+          <span style="font-size:.72rem;color:var(--text-muted)">%</span>
+          <input type="range" class="apr-slider"
+                 value="${+debt.apr||0}" min="0" max="36" step="0.01" aria-label="APR slider">
+        </div>
+      </div>
+      <div class="fg">
+        <span class="fg-lbl">TARGET DATE</span>
+        <input type="month" class="debt-target ii"
+               value="${debt.target||S.globalTarget}" aria-label="Target payoff date">
+      </div>
+    </div>
+    ${b<=0&&ob>0?'<div class="paid-badge">✓ PAID OFF</div>':''}
+  `;
+  return card;
+}
+
+function renderIncome() {
+  const c = document.getElementById('income-list');
+  c.innerHTML='';
+  S.income.forEach(src=>{
+    const r=document.createElement('div');
+    r.className='drow in'; r.dataset.id=src.id;
+    r.innerHTML=`
+      <input type="text" class="inc-lbl ii" value="${esc(src.label)}"
+             placeholder="Source name" aria-label="Income source" style="flex:1">
+      <div class="sym">
+        <span>$</span>
+        <input type="number" class="inc-amt ii ra" value="${src.amt||''}"
+               placeholder="0" min="0" step="0.01" inputmode="decimal"
+               aria-label="Monthly amount" style="width:80px">
+        <span class="dim">/mo</span>
+      </div>
+      <button class="drow-rm" aria-label="Remove">✕</button>
+    `;
+    c.appendChild(r);
+  });
+}
+
+function renderExpenses() {
+  const c = document.getElementById('expense-list');
+  c.innerHTML='';
+  S.expenses.forEach(exp=>{
+    const r=document.createElement('div');
+    r.className='drow in'; r.dataset.id=exp.id;
+    r.innerHTML=`
+      <input type="text" class="exp-lbl ii" value="${esc(exp.label)}"
+             placeholder="Expense name" aria-label="Expense name" style="flex:1">
+      <div class="sym">
+        <span>$</span>
+        <input type="number" class="exp-amt ii ra" value="${exp.amt||''}"
+               placeholder="0" min="0" step="0.01" inputmode="decimal"
+               aria-label="Monthly amount" style="width:80px">
+        <span class="dim">/mo</span>
+      </div>
+      <button class="drow-rm" aria-label="Remove">✕</button>
+    `;
+    c.appendChild(r);
+  });
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  const tabs = [{id:'all',label:'All'}, ...S.debts.map(d=>({id:d.id,label:d.label||'Unnamed'}))];
+  if (!tabs.find(t=>t.id===activeTab)) activeTab='all';
+  bar.innerHTML = tabs.map(t=>
+    `<button class="tab-btn${t.id===activeTab?' act':''}" data-tab="${t.id}"
+             role="tab" aria-selected="${t.id===activeTab}">${esc(t.label)}</button>`
+  ).join('');
+}
+
+function renderTable() {
+  renderTabs();
+  const tb = document.getElementById('tbl-body');
+  let rows = activeTab==='all'
+    ? R.combined
+    : (R.dr.find(r=>r.d.id===activeTab)||{rows:[]}).rows;
+
+  if (!rows.length) {
+    tb.innerHTML=`<tr><td colspan="5" class="tbl-empty">Add a debt to see your payoff schedule.</td></tr>`;
+    return;
+  }
+  const cur = nowMM();
+  tb.innerHTML = rows.map(r=>`
+    <tr${r.mm===cur?' class="cur"':''}>
+      <td>${monthLabel(r.mm)}</td>
+      <td class="r">$${fmt(r.pmt,2)}</td>
+      <td class="r int">$${fmt(r.int,2)}</td>
+      <td class="r">$${fmt(r.pri,2)}</td>
+      <td class="r bal">$${fmt(r.bal,2)}</td>
+    </tr>
+  `).join('');
+}
+
+/* ── Events ───────────────────────────────────────────────────────────────── */
+
+function recalc() {
+  R = calcAll(); renderMetrics(); renderProgress(); renderTable();
+}
+
+function bindEvents() {
+
+  // Onboarding
+  const obName = document.getElementById('ob-name');
+  function submitName() {
+    const name = obName.value.trim();
+    if (!name) { obName.focus(); return; }
+    S.userName = name;
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
+    document.getElementById('dash-title').textContent = `${name}'s tracker.`;
+    show('dashboard');
+    render();
+  }
+  document.getElementById('ob-btn').addEventListener('click', submitName);
+  obName.addEventListener('keydown', e=>{ if(e.key==='Enter') submitName(); });
+
+  // Add debt
+  document.getElementById('add-debt').addEventListener('click', ()=>{
+    S.debts.push({id:uid(),label:'',type:'credit_card',origBal:0,balance:0,apr:0,target:S.globalTarget});
+    renderDebts(); scheduleSave();
+    setTimeout(()=>{
+      const cs=document.querySelectorAll('.debt-card');
+      if(cs.length) cs[cs.length-1].querySelector('.dc-label').focus();
+    },60);
+  });
+
+  // Add income
+  document.getElementById('add-income').addEventListener('click', ()=>{
+    S.income.push({id:uid(),label:'',amt:0}); renderIncome(); scheduleSave();
+    setTimeout(()=>{
+      const rs=document.querySelectorAll('#income-list .drow');
+      if(rs.length) rs[rs.length-1].querySelector('input').focus();
+    },40);
+  });
+
+  // Add expense
+  document.getElementById('add-expense').addEventListener('click', ()=>{
+    S.expenses.push({id:uid(),label:'',amt:0}); renderExpenses(); scheduleSave();
+    setTimeout(()=>{
+      const rs=document.querySelectorAll('#expense-list .drow');
+      if(rs.length) rs[rs.length-1].querySelector('input').focus();
+    },40);
+  });
+
+  // Salary
+  document.getElementById('sal-inp').addEventListener('input', e=>{
+    S.salary = +e.target.value||0; recalc(); scheduleSave();
+  });
+
+  // Debt list — input + change delegation
+  const debtList = document.getElementById('debts-list');
+
+  function handleDebtEvent(e) {
+    const card = e.target.closest('.debt-card');
+    if (!card) return;
+    const debt = S.debts.find(d=>d.id===card.dataset.id);
+    if (!debt) return;
+
+    if (e.target.matches('.dc-label')) {
+      debt.label = e.target.value; renderTabs();
+    } else if (e.target.matches('.debt-type')) {
+      debt.type = e.target.value;
+      card.querySelector('.dc-label').placeholder = T_PH[debt.type]||'Debt name';
+    } else if (e.target.matches('.debt-bal')) {
+      const val = +e.target.value||0;
+      if (debt.origBal===0 && val>0) {
+        debt.origBal = val;
+        const ov = card.querySelector('.orig-val');
+        if (ov) ov.textContent = '$'+fmt(val,2);
+      }
+      debt.balance = val;
+      const off = val<=0 && debt.origBal>0;
+      card.classList.toggle('paid-off', off);
+      let badge = card.querySelector('.paid-badge');
+      if (off && !badge) { badge=document.createElement('div'); badge.className='paid-badge'; badge.textContent='✓ PAID OFF'; card.appendChild(badge); }
+      else if (!off && badge) badge.remove();
+    } else if (e.target.matches('.apr-num')) {
+      const val = Math.min(36,Math.max(0,+e.target.value||0));
+      debt.apr = val;
+      card.querySelector('.apr-slider').value = val;
+      card.querySelector('.apr-disp').textContent = val.toFixed(2)+'%';
+    } else if (e.target.matches('.apr-slider')) {
+      const val = +e.target.value;
+      debt.apr = val;
+      card.querySelector('.apr-num').value = val.toFixed(2);
+      card.querySelector('.apr-disp').textContent = val.toFixed(2)+'%';
+    } else if (e.target.matches('.debt-target')) {
+      debt.target = e.target.value;
+    } else return;
+
+    recalc(); scheduleSave();
+  }
+
+  debtList.addEventListener('input', handleDebtEvent);
+  debtList.addEventListener('change', handleDebtEvent);
+
+  debtList.addEventListener('click', e=>{
+    if (!e.target.matches('.dc-rm')) return;
+    const card = e.target.closest('.debt-card');
+    const debt = S.debts.find(d=>d.id===card.dataset.id);
+    if (debt && (+debt.balance||0)>0 && !confirm(`Remove "${debt.label||'this debt'}"?`)) return;
+    S.debts = S.debts.filter(d=>d.id!==card.dataset.id);
+    card.classList.add('out');
+    setTimeout(()=>{
+      card.remove();
+      if (activeTab===card.dataset.id) activeTab='all';
+      recalc(); scheduleSave();
+    }, 220);
+  });
+
+  // Income delegation
+  const incList = document.getElementById('income-list');
+  incList.addEventListener('input', e=>{
+    const r=e.target.closest('.drow'); if(!r) return;
+    const src=S.income.find(s=>s.id===r.dataset.id); if(!src) return;
+    if(e.target.matches('.inc-lbl')) src.label=e.target.value;
+    if(e.target.matches('.inc-amt')) src.amt=+e.target.value||0;
+    recalc(); scheduleSave();
+  });
+  incList.addEventListener('click', e=>{
+    if(!e.target.matches('.drow-rm')) return;
+    const r=e.target.closest('.drow');
+    S.income=S.income.filter(s=>s.id!==r.dataset.id);
+    r.classList.add('out'); setTimeout(()=>{ r.remove(); recalc(); scheduleSave(); },200);
+  });
+
+  // Expense delegation
+  const expList = document.getElementById('expense-list');
+  expList.addEventListener('input', e=>{
+    const r=e.target.closest('.drow'); if(!r) return;
+    const ex=S.expenses.find(s=>s.id===r.dataset.id); if(!ex) return;
+    if(e.target.matches('.exp-lbl')) ex.label=e.target.value;
+    if(e.target.matches('.exp-amt')) ex.amt=+e.target.value||0;
+    recalc(); scheduleSave();
+  });
+  expList.addEventListener('click', e=>{
+    if(!e.target.matches('.drow-rm')) return;
+    const r=e.target.closest('.drow');
+    S.expenses=S.expenses.filter(s=>s.id!==r.dataset.id);
+    r.classList.add('out'); setTimeout(()=>{ r.remove(); recalc(); scheduleSave(); },200);
+  });
+
+  // Table tabs
+  document.getElementById('tab-bar').addEventListener('click', e=>{
+    if(!e.target.matches('.tab-btn')) return;
+    activeTab=e.target.dataset.tab; renderTable();
+  });
+}
+
+/* ── Init ─────────────────────────────────────────────────────────────────── */
+
+S = load();
+
+if (S.userName) {
+  document.getElementById('dash-title').textContent = `${S.userName}'s tracker.`;
+  if (S.salary) document.getElementById('sal-inp').value = S.salary;
+  show('dashboard');
+  render();
+} else {
+  show('onboarding');
+}
+
+bindEvents();
+</script>
+</body>
+</html>
