@@ -62,10 +62,11 @@ body::before{
 #ob-btn{
   margin-top:40px;background:var(--accent);color:var(--bg);border:none;
   font-family:var(--font-m);font-size:.72rem;font-weight:500;letter-spacing:.1em;
-  text-transform:uppercase;padding:13px 36px;cursor:pointer;transition:opacity 150ms;
+  text-transform:uppercase;padding:13px 36px;cursor:pointer;
+  transition:opacity 150ms,transform 160ms ease-out;
 }
-#ob-btn:hover{opacity:.85}
-#ob-btn:active{opacity:.7}
+@media(hover:hover)and(pointer:fine){#ob-btn:hover{opacity:.85}}
+#ob-btn:active{opacity:.7;transform:scale(0.97)}
 #ob-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
 /* ── DASHBOARD ──────────────────────────────────────────────────────────── */
@@ -83,7 +84,7 @@ body::before{
 #dash-title{font-family:var(--font-d);font-size:clamp(1.5rem,3vw,2.25rem);font-weight:400}
 #saved-ind{
   font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--accent);opacity:0;transition:opacity 300ms;
+  color:var(--accent);opacity:0;transition:opacity 150ms ease-out;
 }
 #saved-ind.on{opacity:1}
 
@@ -106,7 +107,7 @@ body::before{
 #status-chip[data-s="tight"]{color:var(--yellow)}
 #status-chip[data-s="not-feasible"]{color:var(--red)}
 .prog-track{height:2px;background:var(--border2);overflow:hidden}
-#prog-fill{height:100%;background:var(--accent);width:0%;transition:width 600ms cubic-bezier(.4,0,.2,1)}
+#prog-fill{height:100%;background:var(--accent);width:100%;transform:scaleX(0);transform-origin:left;transition:transform 500ms cubic-bezier(0.23,1,0.32,1)}
 
 /* Main grid */
 .main-grid{display:grid;grid-template-columns:420px 1fr;gap:52px;align-items:start;margin-top:40px}
@@ -123,8 +124,8 @@ body::before{
 .debt-card{
   border:1px solid var(--border);background:var(--surface);
   padding:16px;margin-bottom:6px;
-  opacity:0;transform:translateY(-6px);
-  transition:opacity 220ms ease,transform 220ms ease,border-color 200ms;
+  opacity:0;transform:translateY(8px);
+  transition:opacity 200ms ease-out,transform 200ms cubic-bezier(0.23,1,0.32,1),border-color 200ms;
 }
 .debt-card.in{opacity:1;transform:none}
 .debt-card.out{opacity:0;transform:translateY(-6px)}
@@ -137,8 +138,26 @@ body::before{
   font-size:.7rem;cursor:pointer;padding:4px;line-height:1;
   transition:color 150ms;flex-shrink:0;
 }
-.dc-rm:hover{color:var(--red)}
+@media(hover:hover)and(pointer:fine){.dc-rm:hover{color:var(--red)}}
 .dc-rm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dc-rm-confirm{
+  display:none;align-items:center;gap:10px;margin-top:10px;
+  font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.debt-card.confirming .dc-rm-confirm{display:flex}
+.debt-card.confirming .dc-fields,.debt-card.confirming .dc-type-row{opacity:.4;pointer-events:none}
+.confirm-yes,.confirm-no{
+  background:transparent;border:1px solid;padding:3px 10px;
+  font-family:var(--font-m);font-size:.58rem;letter-spacing:.1em;cursor:pointer;
+  text-transform:uppercase;transition:opacity 150ms,transform 100ms ease-out;
+}
+.confirm-yes{border-color:var(--red);color:var(--red)}
+.confirm-no{border-color:var(--border2);color:var(--text-muted)}
+@media(hover:hover)and(pointer:fine){
+  .confirm-yes:hover,.confirm-no:hover{opacity:.7}
+}
+.confirm-yes:active,.confirm-no:active{transform:scale(0.96)}
 
 .dc-type-row{margin-bottom:10px}
 .dc-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -158,7 +177,7 @@ body::before{
   background:var(--accent);cursor:pointer;border-radius:0;
   transition:transform 150ms;
 }
-.apr-slider:hover::-webkit-slider-thumb{transform:scale(1.3)}
+@media(hover:hover)and(pointer:fine){.apr-slider:hover::-webkit-slider-thumb{transform:scale(1.3)}}
 .apr-slider::-moz-range-thumb{width:13px;height:13px;background:var(--accent);border:none;cursor:pointer;border-radius:0}
 
 .paid-badge{margin-top:10px;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
@@ -205,7 +224,7 @@ body::before{
   background:transparent;border:none;color:var(--text-dim);
   font-size:.68rem;cursor:pointer;padding:4px;transition:color 150ms;flex-shrink:0;
 }
-.drow-rm:hover{color:var(--red)}
+@media(hover:hover)and(pointer:fine){.drow-rm:hover{color:var(--red)}}
 .drow-rm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Salary row */
@@ -217,9 +236,10 @@ body::before{
   background:transparent;border:1px dashed var(--border2);color:var(--text-muted);
   font-family:var(--font-m);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;
   padding:10px 16px;width:100%;cursor:pointer;margin-top:6px;
-  transition:border-color 200ms,color 200ms;
+  transition:border-color 200ms,color 200ms,transform 120ms ease-out;
 }
-.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+@media(hover:hover)and(pointer:fine){.add-btn:hover{border-color:var(--accent);color:var(--accent)}}
+.add-btn:active{transform:scale(0.98)}
 .add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Table column */
@@ -231,7 +251,7 @@ body::before{
   text-transform:uppercase;padding:9px 14px;cursor:pointer;margin-bottom:-1px;
   transition:color 150ms,border-color 150ms;white-space:nowrap;
 }
-.tab-btn:hover{color:var(--text)}
+@media(hover:hover)and(pointer:fine){.tab-btn:hover{color:var(--text)}}
 .tab-btn.act{color:var(--accent);border-bottom-color:var(--accent)}
 .tab-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
@@ -255,7 +275,7 @@ thead th{
 }
 thead th.r{text-align:right}
 tbody tr{border-bottom:1px solid var(--border);transition:background 120ms}
-tbody tr:hover{background:var(--surface)}
+@media(hover:hover)and(pointer:fine){tbody tr:hover{background:var(--surface)}}
 tbody tr.cur{background:var(--accent-bg)}
 td{padding:7px 12px;color:var(--text)}
 td.r{text-align:right;font-variant-numeric:tabular-nums}
@@ -276,7 +296,7 @@ td.bal{font-weight:500}
 .ph-card summary::-webkit-details-marker{display:none}
 .ph-num{font-family:var(--font-d);font-style:italic;font-size:1.4rem;color:var(--text-dim)}
 .ph-ttl{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-top:2px}
-.ph-chev{font-size:.58rem;color:var(--text-dim);transition:transform 200ms}
+.ph-chev{font-size:.58rem;color:var(--text-dim);transition:transform 200ms ease-out}
 details[open] .ph-chev{transform:rotate(180deg)}
 .ph-body{padding:0 22px 22px;border-top:1px solid var(--border)}
 .ph-body ul{list-style:none;margin-top:14px}
@@ -634,7 +654,7 @@ function renderMetrics() {
 function renderProgress() {
   const {pct, status} = R, p = Math.round(pct*100);
   const fill = document.getElementById('prog-fill');
-  fill.style.width = p+'%';
+  fill.style.transform = `scaleX(${p/100})`;
   fill.closest('[role="progressbar"]').setAttribute('aria-valuenow', p);
   document.getElementById('prog-pct').textContent = p+'% cleared';
   const chip = document.getElementById('status-chip');
@@ -718,51 +738,80 @@ function mkDebtCard(debt) {
       </div>
     </div>
     ${b<=0&&ob>0?'<div class="paid-badge">✓ PAID OFF</div>':''}
+    <div class="dc-rm-confirm">
+      <span>Remove this debt?</span>
+      <button class="confirm-yes">Yes</button>
+      <button class="confirm-no">Cancel</button>
+    </div>
   `;
   return card;
 }
 
+function mkIncomeRow(src) {
+  const r = document.createElement('div');
+  r.className = 'drow'; r.dataset.id = src.id;
+  r.innerHTML = `
+    <input type="text" class="inc-lbl ii" value="${esc(src.label)}"
+           placeholder="Source name" aria-label="Income source" style="flex:1">
+    <div class="sym">
+      <span>$</span>
+      <input type="number" class="inc-amt ii ra" value="${src.amt||''}"
+             placeholder="0" min="0" step="0.01" inputmode="decimal"
+             aria-label="Monthly amount" style="width:80px">
+      <span class="dim">/mo</span>
+    </div>
+    <button class="drow-rm" aria-label="Remove">✕</button>
+  `;
+  return r;
+}
+
+function mkExpenseRow(exp) {
+  const r = document.createElement('div');
+  r.className = 'drow'; r.dataset.id = exp.id;
+  r.innerHTML = `
+    <input type="text" class="exp-lbl ii" value="${esc(exp.label)}"
+           placeholder="Expense name" aria-label="Expense name" style="flex:1">
+    <div class="sym">
+      <span>$</span>
+      <input type="number" class="exp-amt ii ra" value="${exp.amt||''}"
+             placeholder="0" min="0" step="0.01" inputmode="decimal"
+             aria-label="Monthly amount" style="width:80px">
+      <span class="dim">/mo</span>
+    </div>
+    <button class="drow-rm" aria-label="Remove">✕</button>
+  `;
+  return r;
+}
+
 function renderIncome() {
   const c = document.getElementById('income-list');
-  c.innerHTML='';
+  const exIds = new Set([...c.querySelectorAll('.drow')].map(el=>el.dataset.id));
+  const stIds = new Set(S.income.map(s=>s.id));
+  [...c.querySelectorAll('.drow')].forEach(el=>{
+    if (!stIds.has(el.dataset.id)) { el.classList.add('out'); setTimeout(()=>el.remove(),200); }
+  });
   S.income.forEach(src=>{
-    const r=document.createElement('div');
-    r.className='drow in'; r.dataset.id=src.id;
-    r.innerHTML=`
-      <input type="text" class="inc-lbl ii" value="${esc(src.label)}"
-             placeholder="Source name" aria-label="Income source" style="flex:1">
-      <div class="sym">
-        <span>$</span>
-        <input type="number" class="inc-amt ii ra" value="${src.amt||''}"
-               placeholder="0" min="0" step="0.01" inputmode="decimal"
-               aria-label="Monthly amount" style="width:80px">
-        <span class="dim">/mo</span>
-      </div>
-      <button class="drow-rm" aria-label="Remove">✕</button>
-    `;
-    c.appendChild(r);
+    if (!exIds.has(src.id)) {
+      const r = mkIncomeRow(src);
+      c.appendChild(r);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>r.classList.add('in')));
+    }
   });
 }
 
 function renderExpenses() {
   const c = document.getElementById('expense-list');
-  c.innerHTML='';
+  const exIds = new Set([...c.querySelectorAll('.drow')].map(el=>el.dataset.id));
+  const stIds = new Set(S.expenses.map(s=>s.id));
+  [...c.querySelectorAll('.drow')].forEach(el=>{
+    if (!stIds.has(el.dataset.id)) { el.classList.add('out'); setTimeout(()=>el.remove(),200); }
+  });
   S.expenses.forEach(exp=>{
-    const r=document.createElement('div');
-    r.className='drow in'; r.dataset.id=exp.id;
-    r.innerHTML=`
-      <input type="text" class="exp-lbl ii" value="${esc(exp.label)}"
-             placeholder="Expense name" aria-label="Expense name" style="flex:1">
-      <div class="sym">
-        <span>$</span>
-        <input type="number" class="exp-amt ii ra" value="${exp.amt||''}"
-               placeholder="0" min="0" step="0.01" inputmode="decimal"
-               aria-label="Monthly amount" style="width:80px">
-        <span class="dim">/mo</span>
-      </div>
-      <button class="drow-rm" aria-label="Remove">✕</button>
-    `;
-    c.appendChild(r);
+    if (!exIds.has(exp.id)) {
+      const r = mkExpenseRow(exp);
+      c.appendChild(r);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>r.classList.add('in')));
+    }
   });
 }
 
@@ -901,18 +950,32 @@ function bindEvents() {
   debtList.addEventListener('input', handleDebtEvent);
   debtList.addEventListener('change', handleDebtEvent);
 
-  debtList.addEventListener('click', e=>{
-    if (!e.target.matches('.dc-rm')) return;
-    const card = e.target.closest('.debt-card');
-    const debt = S.debts.find(d=>d.id===card.dataset.id);
-    if (debt && (+debt.balance||0)>0 && !confirm(`Remove "${debt.label||'this debt'}"?`)) return;
-    S.debts = S.debts.filter(d=>d.id!==card.dataset.id);
+  function removeDebt(card) {
+    const id = card.dataset.id;
+    S.debts = S.debts.filter(d=>d.id!==id);
+    card.classList.remove('confirming');
     card.classList.add('out');
     setTimeout(()=>{
       card.remove();
-      if (activeTab===card.dataset.id) activeTab='all';
+      if (activeTab===id) activeTab='all';
       recalc(); scheduleSave();
     }, 220);
+  }
+
+  debtList.addEventListener('click', e=>{
+    if (e.target.matches('.confirm-yes')) {
+      removeDebt(e.target.closest('.debt-card')); return;
+    }
+    if (e.target.matches('.confirm-no')) {
+      e.target.closest('.debt-card').classList.remove('confirming'); return;
+    }
+    if (!e.target.matches('.dc-rm')) return;
+    const card = e.target.closest('.debt-card');
+    const debt = S.debts.find(d=>d.id===card.dataset.id);
+    if (debt && (+debt.balance||0)>0) {
+      card.classList.add('confirming'); return;
+    }
+    removeDebt(card);
   });
 
   // Income delegation
