@@ -32,7 +32,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 body::before{
   content:'';position:fixed;inset:0;
   background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
-  background-size:32px 32px;opacity:0.35;pointer-events:none;z-index:0;
+  background-size:32px 32px;opacity:0.5;pointer-events:none;z-index:0;
 }
 
 /* ── SCREEN TRANSITIONS ─────────────────────────────────────────────────── */
@@ -63,9 +63,9 @@ body::before{
   transform:translateY(0);pointer-events:auto;
 }
 .ob-inner{max-width:440px;width:100%;text-align:center}
-.ob-tag{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:56px}
-.ob-q{font-family:var(--font-d);font-style:italic;font-size:clamp(2rem,5vw,3rem);line-height:1.15;margin-bottom:10px}
-.ob-sub{font-size:.72rem;color:var(--text-muted);margin-bottom:44px}
+.ob-tag{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:64px}
+.ob-q{font-family:var(--font-d);font-style:italic;font-size:clamp(3rem,7vw,5rem);line-height:1.08;margin-bottom:14px}
+.ob-sub{font-size:.68rem;color:var(--text-muted);margin-bottom:48px}
 
 #ob-name{
   background:transparent;border:none;border-bottom:1px solid var(--border2);
@@ -94,14 +94,15 @@ body::before{
   display:flex;align-items:baseline;justify-content:space-between;
   padding:40px 0 28px;border-bottom:1px solid var(--border);
 }
-#dash-title{font-family:var(--font-d);font-size:clamp(1.5rem,3vw,2.25rem);font-weight:400}
+#dash-title{font-family:var(--font-d);font-style:italic;font-size:clamp(1.75rem,3.5vw,2.75rem);font-weight:400;letter-spacing:-0.01em}
 
 /* Metrics */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin:28px 0}
-.mc{background:var(--bg);padding:24px 20px}
-.mc-lbl{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
-.mc-val{font-family:var(--font-d);font-size:clamp(1.6rem,2.8vw,2.4rem);line-height:1;color:var(--text)}
+.mc{background:var(--bg);padding:28px 22px 24px}
+.mc-lbl{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px}
+.mc-val{font-family:var(--font-d);font-size:clamp(2.2rem,3.8vw,3.6rem);line-height:1;color:var(--text)}
 .mc.neg .mc-val{color:var(--red)}
+.mc.neg .mc-lbl{color:var(--red);opacity:0.6}
 
 /* Progress */
 .prog-section{margin-bottom:32px}
@@ -110,8 +111,8 @@ body::before{
 #status-chip[data-s="on-track"]{color:var(--accent)}
 #status-chip[data-s="tight"]{color:var(--yellow)}
 #status-chip[data-s="not-feasible"]{color:var(--red)}
-.prog-track{height:2px;background:var(--border2);overflow:hidden}
-#prog-fill{height:100%;background:var(--accent);width:100%;transform:scaleX(0);transform-origin:left;transition:transform 500ms cubic-bezier(0.23,1,0.32,1)}
+.prog-track{height:3px;background:var(--border2);overflow:hidden}
+#prog-fill{position:relative;height:100%;background:var(--accent);width:100%;transform:scaleX(0);transform-origin:left;transition:transform 500ms cubic-bezier(0.23,1,0.32,1)}
 
 /* Main grid */
 .main-grid{display:grid;grid-template-columns:420px 1fr;gap:52px;align-items:start;margin-top:40px}
@@ -298,7 +299,7 @@ td.bal{font-weight:500}
   display:flex;align-items:center;justify-content:space-between;user-select:none;
 }
 .ph-card summary::-webkit-details-marker{display:none}
-.ph-num{font-family:var(--font-d);font-style:italic;font-size:1.4rem;color:var(--text-dim)}
+.ph-num{font-family:var(--font-d);font-style:italic;font-size:2.2rem;color:var(--text-dim);line-height:1}
 .ph-ttl{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-top:2px}
 .ph-chev{font-size:.58rem;color:var(--text-dim);transition:transform 200ms ease-out}
 details[open] .ph-chev{transform:rotate(180deg)}
@@ -401,6 +402,51 @@ details[open] .ph-chev{transform:rotate(180deg)}
 }
 .ph-card.revealed{opacity:1;transform:none}
 
+/* ── DASHBOARD ENTRANCE ─────────────────────────────────────────────────── */
+
+@keyframes dash-in{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+body.dashboard-entering .dash-hdr{animation:dash-in 500ms cubic-bezier(0.22,1,0.36,1) 380ms both}
+body.dashboard-entering .metrics{animation:dash-in 500ms cubic-bezier(0.22,1,0.36,1) 460ms both}
+body.dashboard-entering .prog-section{animation:dash-in 500ms cubic-bezier(0.22,1,0.36,1) 530ms both}
+body.dashboard-entering .main-grid{animation:dash-in 500ms cubic-bezier(0.22,1,0.36,1) 620ms both}
+
+/* ── SLIDING TAB INDICATOR ──────────────────────────────────────────────── */
+
+.tab-indicator{
+  position:absolute;bottom:-1px;height:2px;
+  background:var(--accent);pointer-events:none;
+  transition:left 240ms cubic-bezier(0.22,1,0.36,1),width 240ms cubic-bezier(0.22,1,0.36,1);
+}
+.tab-btn.act{color:var(--accent);border-bottom-color:transparent}
+
+/* ── PAID-OFF CELEBRATION ───────────────────────────────────────────────── */
+
+@keyframes paid-glow{
+  0%  {box-shadow:none;border-color:var(--border)}
+  40% {box-shadow:0 0 0 3px #c8f06026;border-color:var(--accent)}
+  100%{box-shadow:none;border-color:var(--accent-dim)}
+}
+.debt-card.just-paid{animation:paid-glow 800ms cubic-bezier(0.22,1,0.36,1) forwards}
+
+/* ── TABLE ROW FADE ─────────────────────────────────────────────────────── */
+
+@keyframes row-in{
+  from{opacity:0}
+  to{opacity:1}
+}
+tbody tr{animation:row-in 150ms ease-out both}
+tbody tr:nth-child(1){animation-delay:0ms}
+tbody tr:nth-child(2){animation-delay:25ms}
+tbody tr:nth-child(3){animation-delay:50ms}
+tbody tr:nth-child(4){animation-delay:75ms}
+tbody tr:nth-child(5){animation-delay:100ms}
+tbody tr:nth-child(6){animation-delay:125ms}
+tbody tr:nth-child(7){animation-delay:150ms}
+tbody tr:nth-child(8){animation-delay:175ms}
+
 /* ── REDUCED MOTION ─────────────────────────────────────────────────────── */
 
 @media(prefers-reduced-motion:reduce){
@@ -408,6 +454,13 @@ details[open] .ph-chev{transform:rotate(180deg)}
   .mc.in{animation:none;opacity:1;transform:none}
   #prog-fill.shimmer::after{animation:none}
   .ph-card{opacity:1;transform:none;transition:none}
+  body.dashboard-entering .dash-hdr,
+  body.dashboard-entering .metrics,
+  body.dashboard-entering .prog-section,
+  body.dashboard-entering .main-grid{animation:none;opacity:1;transform:none}
+  tbody tr{animation:none}
+  .debt-card.just-paid{animation:none}
+  .tab-indicator{transition:none}
 }
 
 input[type="month"]{color-scheme:dark}
@@ -964,6 +1017,18 @@ function renderTabs() {
     `<button class="tab-btn${t.id===activeTab?' act':''}" data-tab="${t.id}"
              role="tab" aria-selected="${t.id===activeTab}">${esc(t.label)}</button>`
   ).join('');
+  // Sliding indicator
+  requestAnimationFrame(() => {
+    const active = bar.querySelector('.tab-btn.act');
+    if (!active) return;
+    let ind = bar.querySelector('.tab-indicator');
+    const isNew = !ind;
+    if (isNew) { ind = document.createElement('div'); ind.className='tab-indicator'; bar.appendChild(ind); }
+    if (isNew) ind.style.transition = 'none';
+    ind.style.left = active.offsetLeft + 'px';
+    ind.style.width = active.offsetWidth + 'px';
+    if (isNew) requestAnimationFrame(() => ind.style.transition = '');
+  });
 }
 
 function renderTable() {
@@ -1005,8 +1070,10 @@ function bindEvents() {
     S.userName = name;
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
     document.getElementById('dash-title').textContent = `${name}'s tracker.`;
+    document.body.classList.add('dashboard-entering');
     show('dashboard');
     render();
+    setTimeout(() => document.body.classList.remove('dashboard-entering'), 1300);
   }
   document.getElementById('ob-btn').addEventListener('click', submitName);
   obName.addEventListener('keydown', e=>{ if(e.key==='Enter') submitName(); });
@@ -1067,7 +1134,12 @@ function bindEvents() {
       }
       debt.balance = val;
       const off = val<=0 && debt.origBal>0;
+      const wasOff = card.classList.contains('paid-off');
       card.classList.toggle('paid-off', off);
+      if (off && !wasOff) {
+        card.classList.add('just-paid');
+        card.addEventListener('animationend', () => card.classList.remove('just-paid'), {once:true});
+      }
       let badge = card.querySelector('.paid-badge');
       if (off && !badge) { badge=document.createElement('div'); badge.className='paid-badge'; badge.textContent='✓ PAID OFF'; card.appendChild(badge); }
       else if (!off && badge) badge.remove();
