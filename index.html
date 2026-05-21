@@ -35,16 +35,32 @@ body::before{
   background-size:32px 32px;opacity:0.35;pointer-events:none;z-index:0;
 }
 
-.screen{display:none}
-[data-screen="onboarding"] #screen-onboarding,
-[data-screen="dashboard"]  #screen-dashboard{display:block}
+/* ── SCREEN TRANSITIONS ─────────────────────────────────────────────────── */
 
-/* ── ONBOARDING ─────────────────────────────────────────────────────────── */
+.screen{
+  position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;
+  background:var(--bg);will-change:transform;
+}
 
 #screen-onboarding{
-  position:relative;z-index:1;min-height:100vh;
-  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  z-index:2;
+  transform:translateY(0);opacity:1;
+  transition:transform 650ms cubic-bezier(0.32,0.72,0,1),opacity 500ms ease-out;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:48px 24px;
+}
+
+#screen-dashboard{
+  z-index:1;
+  transform:translateY(100%);pointer-events:none;
+  transition:transform 650ms cubic-bezier(0.32,0.72,0,1);
+}
+
+[data-screen="dashboard"] #screen-onboarding{
+  transform:translateY(-20%);opacity:0;pointer-events:none;
+}
+[data-screen="dashboard"] #screen-dashboard{
+  transform:translateY(0);pointer-events:auto;
 }
 .ob-inner{max-width:440px;width:100%;text-align:center}
 .ob-tag{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:56px}
@@ -71,10 +87,7 @@ body::before{
 
 /* ── DASHBOARD ──────────────────────────────────────────────────────────── */
 
-#screen-dashboard{
-  position:relative;z-index:1;max-width:1300px;margin:0 auto;
-  padding:0 28px 100px;
-}
+.dash-inner{max-width:1300px;margin:0 auto;padding:0 28px 100px}
 
 /* Header */
 .dash-hdr{
@@ -317,7 +330,7 @@ details[open] .ph-chev{transform:rotate(180deg)}
   .phases-grid{grid-template-columns:1fr}
 }
 @media(max-width:480px){
-  #screen-dashboard{padding:0 16px 60px}
+  .dash-inner{padding:0 16px 60px}
   .mc{padding:16px}
   .main-grid{margin-top:28px}
 }
@@ -344,6 +357,7 @@ input[type="number"]{-moz-appearance:textfield}
 
 <!-- ── SCREEN 2: DASHBOARD ───────────────────────────────────────────────── -->
 <div id="screen-dashboard" class="screen">
+<div class="dash-inner">
 
   <header class="dash-hdr">
     <h1 id="dash-title">Your tracker.</h1>
@@ -484,7 +498,8 @@ input[type="number"]{-moz-appearance:textfield}
     </div>
   </section>
 
-</div>
+</div><!-- /.dash-inner -->
+</div><!-- /#screen-dashboard -->
 
 <script>
 'use strict';
