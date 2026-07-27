@@ -23,6 +23,7 @@
   --text-dim:#333330;
   --red:#ff6060;
   --yellow:#f0c040;
+  --green:#4ade80;
   --font-d:'Instrument Serif',serif;
   --font-m:'DM Mono',monospace;
 }
@@ -312,6 +313,81 @@ details[open] .ph-chev{transform:rotate(180deg)}
 .ph-body li::before{content:'—';position:absolute;left:0;color:var(--text-dim)}
 .ph-body li:last-child{border-bottom:none}
 
+/* ── BACKUP BUTTONS ─────────────────────────────────────────────────────── */
+.hdr-right{display:flex;align-items:center;gap:12px}
+.backup-btn{
+  background:transparent;border:1px solid var(--border);color:var(--text-muted);
+  font-family:var(--font-m);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;cursor:pointer;transition:border-color 200ms,color 200ms,transform 120ms ease-out;white-space:nowrap;
+}
+@media(hover:hover)and(pointer:fine){.backup-btn:hover{border-color:var(--accent);color:var(--accent)}}
+.backup-btn:active{transform:scale(0.97)}
+.backup-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── STOCKS ─────────────────────────────────────────────────────────────── */
+
+.stocks-section{margin-top:48px;border-top:1px solid var(--border);padding-top:32px}
+.stocks-hd-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.stocks-hd-row .s-hd{margin:0;padding:0;border:none;flex:1}
+.refresh-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:var(--font-m);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;cursor:pointer;transition:border-color 200ms,color 200ms}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+.refresh-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#last-updated{font-size:.58rem;color:var(--text-dim);letter-spacing:.06em}
+
+.av-setup{margin-bottom:20px;border:1px solid var(--border)}
+.av-setup summary{padding:10px 14px;cursor:pointer;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;justify-content:space-between;user-select:none;list-style:none}
+.av-setup summary::-webkit-details-marker{display:none}
+.av-status{font-size:.6rem;color:var(--green)}
+.av-key-row{display:flex;align-items:center;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.av-key-row input{flex:1;min-width:200px;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-family:var(--font-m);font-size:.78rem;padding:4px 0;outline:none;transition:border-color 200ms}
+.av-key-row input:focus{border-bottom-color:var(--accent)}
+.av-key-row input::placeholder{color:var(--text-dim)}
+.av-save-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-m);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;cursor:pointer;transition:border-color 200ms}
+.av-save-btn:hover{border-color:var(--accent)}
+.av-key-row a{font-size:.65rem;color:var(--text-muted);text-decoration:none;letter-spacing:.04em;white-space:nowrap}
+.av-key-row a:hover{color:var(--accent)}
+
+.stocks-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+
+.stock-card{border:1px solid var(--border);background:var(--surface);padding:14px 16px;margin-bottom:6px;opacity:0;transform:translateY(-4px);transition:opacity 200ms,transform 200ms}
+.stock-card.in{opacity:1;transform:none}
+.stock-card.out{opacity:0;transform:translateY(-4px)}
+.stock-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.stock-sym{font-family:var(--font-d);font-size:1.1rem;font-weight:400;letter-spacing:.02em}
+.stock-name{font-size:.65rem;color:var(--text-muted);margin-left:8px}
+.stock-price-row{display:flex;align-items:baseline;gap:10px}
+.stock-price{font-family:var(--font-d);font-size:1.4rem}
+.stock-change{font-size:.72rem;font-weight:500}
+.stock-change.pos{color:var(--green)}
+.stock-change.neg{color:var(--red)}
+.stock-change.neu{color:var(--text-muted)}
+.stock-rm{background:transparent;border:none;color:var(--text-dim);font-size:.7rem;cursor:pointer;padding:4px;transition:color 150ms}
+.stock-rm:hover{color:var(--red)}
+
+.stock-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.stock-calcs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.sc-item{display:flex;flex-direction:column;gap:3px}
+.sc-lbl{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.sc-val{font-size:.82rem;font-weight:500}
+.sc-val.pos{color:var(--green)}
+.sc-val.neg{color:var(--red)}
+.sc-val.muted{color:var(--text-muted)}
+
+.no-price{font-size:.68rem;color:var(--text-dim);font-style:italic}
+
+.recs-disclaimer{font-size:.6rem;color:var(--text-dim);letter-spacing:.06em;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.rec-card{border:1px solid var(--border);padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px;transition:border-color 150ms}
+.rec-card:hover{border-color:var(--border2)}
+.rec-ticker{font-family:var(--font-d);font-size:1rem;flex-shrink:0;width:52px}
+.rec-info{flex:1}
+.rec-name{font-size:.72rem;color:var(--text);margin-bottom:3px}
+.rec-desc{font-size:.65rem;color:var(--text-muted);line-height:1.5}
+.risk-pill{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid;flex-shrink:0;margin-top:2px}
+.risk-pill.low{color:var(--green);border-color:var(--green)}
+.risk-pill.med{color:var(--yellow);border-color:var(--yellow)}
+.risk-pill.high{color:var(--red);border-color:var(--red)}
+
 /* Focus */
 *:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
@@ -320,6 +396,7 @@ details[open] .ph-chev{transform:rotate(180deg)}
   .main-grid{grid-template-columns:1fr;gap:40px}
   .metrics{grid-template-columns:repeat(2,1fr)}
   .phases-grid{grid-template-columns:1fr}
+  .stocks-grid{grid-template-columns:1fr;gap:40px}
 }
 @media(max-width:480px){
   .dash-inner{padding:0 16px 60px}
@@ -489,7 +566,12 @@ input[type="number"]{-moz-appearance:textfield}
 
   <header class="dash-hdr">
     <h1 id="dash-title">Your tracker.</h1>
-    <span id="saved-ind" aria-live="polite">● Saved</span>
+    <div class="hdr-right">
+      <span id="saved-ind" aria-live="polite">● Saved</span>
+      <button id="export-btn" class="backup-btn" title="Download a backup of all your data">↓ Export</button>
+      <button id="import-btn" class="backup-btn" title="Restore from a backup file">↑ Import</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
+    </div>
   </header>
 
   <div class="metrics" role="region" aria-label="Summary metrics">
@@ -567,6 +649,48 @@ input[type="number"]{-moz-appearance:textfield}
     </div>
 
   </div>
+
+  <!-- ── STOCKS ─────────────────────────────────────────────────────────── -->
+  <section class="stocks-section" aria-label="Stock tracker">
+
+    <details class="av-setup" id="av-setup">
+      <summary>Alpha Vantage API Key <span class="av-status" id="av-status"></span></summary>
+      <div class="av-key-row">
+        <input id="av-key-inp" type="text" placeholder="Paste your free API key here" autocomplete="off" aria-label="Alpha Vantage API key">
+        <button class="av-save-btn" id="av-key-save">Save Key</button>
+        <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener">Get free key →</a>
+      </div>
+    </details>
+
+    <div class="stocks-grid">
+
+      <div class="holdings-col">
+        <div class="stocks-hd-row">
+          <div class="s-hd">Your Holdings</div>
+          <button class="refresh-btn" id="refresh-stocks" aria-label="Refresh stock prices">↻ Refresh</button>
+          <span id="last-updated"></span>
+        </div>
+        <div id="stocks-list"></div>
+        <button id="add-stock" class="add-btn">+ Add Stock</button>
+      </div>
+
+      <div class="recs-col">
+        <div class="stocks-hd-row"><div class="s-hd">Ideas to Explore</div></div>
+        <p class="recs-disclaimer">For educational purposes only — not financial advice. Always do your own research.</p>
+        <div id="recs-list">
+          <div class="rec-card"><span class="rec-ticker">VOO</span><div class="rec-info"><div class="rec-name">Vanguard S&amp;P 500 ETF</div><div class="rec-desc">Tracks the 500 largest US companies. The most common "set it and forget it" long-term pick.</div></div><span class="risk-pill low">Low</span></div>
+          <div class="rec-card"><span class="rec-ticker">VTI</span><div class="rec-info"><div class="rec-name">Vanguard Total Market ETF</div><div class="rec-desc">Every publicly traded US company in one fund. Maximum diversification.</div></div><span class="risk-pill low">Low</span></div>
+          <div class="rec-card"><span class="rec-ticker">QQQ</span><div class="rec-info"><div class="rec-name">Invesco Nasdaq-100 ETF</div><div class="rec-desc">Top 100 tech-heavy companies. Higher growth potential, higher swings.</div></div><span class="risk-pill med">Medium</span></div>
+          <div class="rec-card"><span class="rec-ticker">SCHD</span><div class="rec-info"><div class="rec-name">Schwab Dividend ETF</div><div class="rec-desc">Pays quarterly dividends from stable companies. Good for passive income.</div></div><span class="risk-pill low">Low</span></div>
+          <div class="rec-card"><span class="rec-ticker">AAPL</span><div class="rec-info"><div class="rec-name">Apple Inc.</div><div class="rec-desc">Most widely held stock globally. Consistent revenue, strong brand moat.</div></div><span class="risk-pill med">Medium</span></div>
+          <div class="rec-card"><span class="rec-ticker">MSFT</span><div class="rec-info"><div class="rec-name">Microsoft Corp.</div><div class="rec-desc">Cloud (Azure) + AI leader. One of the most consistent growers in the market.</div></div><span class="risk-pill med">Medium</span></div>
+          <div class="rec-card"><span class="rec-ticker">NVDA</span><div class="rec-info"><div class="rec-name">NVIDIA Corp.</div><div class="rec-desc">GPU + AI infrastructure. Explosive growth but high volatility — not for the faint-hearted.</div></div><span class="risk-pill high">High</span></div>
+          <div class="rec-card"><span class="rec-ticker">AMZN</span><div class="rec-info"><div class="rec-name">Amazon.com Inc.</div><div class="rec-desc">E-commerce + AWS cloud. Long-term compounder with multiple revenue streams.</div></div><span class="risk-pill med">Medium</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <section class="phases" aria-label="Roadmap phases">
     <div class="phases-hd">Your Roadmap</div>
@@ -656,7 +780,8 @@ const monthLabel = mm => {
 const KEY = 'debtTracker_v1';
 const DEF = {
   userName:'', globalTarget:'2026-12',
-  debts:[], salary:0, income:[], expenses:[]
+  debts:[], salary:0, income:[], expenses:[],
+  avKey:'', stocks:[]
 };
 
 let S;
@@ -1054,6 +1179,170 @@ function renderTable() {
   `).join('');
 }
 
+/* ── Stocks ───────────────────────────────────────────────────────────────── */
+
+async function fetchStockPrice(symbol) {
+  try {
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${S.avKey}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const q = json['Global Quote'];
+    if (!q || !q['05. price']) return null;
+    return {
+      price: parseFloat(q['05. price']),
+      change: parseFloat(q['09. change']),
+      changePct: parseFloat(q['10. change percent']),
+      lastFetched: new Date().toISOString()
+    };
+  } catch { return null; }
+}
+
+async function refreshAllStocks() {
+  if (!S.avKey) {
+    document.getElementById('av-setup').open = true;
+    return;
+  }
+  if (!S.stocks.length) return;
+  const btn = document.getElementById('refresh-stocks');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  for (const stock of S.stocks) {
+    const data = await fetchStockPrice(stock.symbol);
+    if (data) Object.assign(stock, data);
+    await new Promise(r => setTimeout(r, 600));
+  }
+  btn.classList.remove('spinning');
+  btn.disabled = false;
+  scheduleSave();
+  renderStocks();
+  const lu = document.getElementById('last-updated');
+  lu.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+function renderStocks() {
+  const c = document.getElementById('stocks-list');
+  const exIds = new Set([...c.querySelectorAll('.stock-card')].map(el=>el.dataset.id));
+  const stIds = new Set(S.stocks.map(s=>s.id));
+
+  [...c.querySelectorAll('.stock-card')].forEach(el=>{
+    if (!stIds.has(el.dataset.id)) { el.classList.add('out'); setTimeout(()=>el.remove(),200); }
+  });
+
+  S.stocks.forEach(stock=>{
+    if (exIds.has(stock.id)) {
+      updateStockCard(stock);
+    } else {
+      const card = mkStockCard(stock);
+      c.appendChild(card);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.add('in')));
+    }
+  });
+}
+
+function mkStockCard(stock) {
+  const card = document.createElement('div');
+  card.className = 'stock-card';
+  card.dataset.id = stock.id;
+  card.innerHTML = stockCardHTML(stock);
+  return card;
+}
+
+function updateStockCard(stock) {
+  const card = document.querySelector(`.stock-card[data-id="${stock.id}"]`);
+  if (!card) return;
+  const focused = document.activeElement;
+  const focusedClass = focused?.className;
+  const focusedInCard = card.contains(focused);
+  card.innerHTML = stockCardHTML(stock);
+  if (focusedInCard && focusedClass) {
+    const el = card.querySelector(`.${focusedClass.trim().split(' ')[0]}`);
+    if (el) el.focus();
+  }
+}
+
+function stockCardHTML(stock) {
+  const p = stock.price, ch = stock.change, pct = stock.changePct;
+  const hasPrice = p != null && !isNaN(p);
+  const chClass = !hasPrice ? 'neu' : ch >= 0 ? 'pos' : 'neg';
+  const chSign = ch >= 0 ? '+' : '';
+  const shares = parseFloat(stock.shares) || 0;
+  const cost = parseFloat(stock.costBasis) || 0;
+  const val = hasPrice ? shares * p : null;
+  const gain = hasPrice && shares > 0 && cost > 0 ? val - shares * cost : null;
+  const gainPct = hasPrice && cost > 0 ? ((p - cost) / cost) * 100 : null;
+
+  return `
+    <div class="stock-top">
+      <div>
+        <span class="stock-sym">${esc(stock.symbol||'—')}</span>
+        ${stock.name ? `<span class="stock-name">${esc(stock.name)}</span>` : ''}
+      </div>
+      <button class="stock-rm" aria-label="Remove stock">✕</button>
+    </div>
+    <div class="stock-price-row">
+      ${hasPrice
+        ? `<span class="stock-price">$${fmt(p,2)}</span>
+           <span class="stock-change ${chClass}">${chSign}$${fmt(Math.abs(ch),2)} (${chSign}${fmt(Math.abs(pct||0),2)}%)</span>`
+        : `<span class="no-price">${stock.symbol ? 'Price unavailable — refresh to load' : 'Enter a symbol above'}</span>`
+      }
+    </div>
+    <div class="stock-inputs">
+      <div class="fg">
+        <span class="fg-lbl">SYMBOL</span>
+        <input type="text" class="stock-sym-inp ii" value="${esc(stock.symbol||'')}"
+               placeholder="e.g. AAPL" aria-label="Stock symbol" style="text-transform:uppercase">
+      </div>
+      <div class="fg">
+        <span class="fg-lbl">SHARES OWNED</span>
+        <input type="number" class="stock-shares ii ra" value="${stock.shares||''}"
+               placeholder="0" min="0" step="0.001" inputmode="decimal" aria-label="Shares owned">
+      </div>
+      <div class="fg">
+        <span class="fg-lbl">AVG COST / SHARE</span>
+        <div class="sym">
+          <span>$</span>
+          <input type="number" class="stock-cost ii ra" value="${stock.costBasis||''}"
+                 placeholder="0.00" min="0" step="0.01" inputmode="decimal" aria-label="Average cost per share">
+        </div>
+      </div>
+    </div>
+    ${hasPrice && shares > 0 ? `
+    <div class="stock-calcs">
+      <div class="sc-item">
+        <span class="sc-lbl">CURRENT VALUE</span>
+        <span class="sc-val">$${fmt(val,2)}</span>
+      </div>
+      ${gain != null ? `
+      <div class="sc-item">
+        <span class="sc-lbl">TOTAL GAIN / LOSS</span>
+        <span class="sc-val ${gain>=0?'pos':'neg'}">${gain>=0?'+':'-'}$${fmt(Math.abs(gain),2)} (${gainPct>=0?'+':''}${fmt(gainPct,1)}%)</span>
+      </div>` : ''}
+    </div>` : ''}
+  `;
+}
+
+function initStocksUI() {
+  const key = S.avKey;
+  const inp = document.getElementById('av-key-inp');
+  const status = document.getElementById('av-status');
+  if (key) {
+    inp.value = key;
+    status.textContent = '● Connected';
+    document.getElementById('av-setup').open = false;
+  } else {
+    document.getElementById('av-setup').open = true;
+  }
+  if (S.stocks.length) {
+    const lu = document.getElementById('last-updated');
+    const times = S.stocks.filter(s=>s.lastFetched).map(s=>new Date(s.lastFetched));
+    if (times.length) {
+      const latest = new Date(Math.max(...times));
+      lu.textContent = 'Updated ' + latest.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    }
+  }
+  renderStocks();
+}
+
 /* ── Events ───────────────────────────────────────────────────────────────── */
 
 function recalc() {
@@ -1073,6 +1362,7 @@ function bindEvents() {
     document.body.classList.add('dashboard-entering');
     show('dashboard');
     render();
+    initStocksUI();
     setTimeout(() => document.body.classList.remove('dashboard-entering'), 1300);
   }
   document.getElementById('ob-btn').addEventListener('click', submitName);
@@ -1228,6 +1518,95 @@ function bindEvents() {
     if(!e.target.matches('.tab-btn')) return;
     activeTab=e.target.dataset.tab; renderTable();
   });
+
+  // API key save
+  document.getElementById('av-key-save').addEventListener('click', ()=>{
+    const val = document.getElementById('av-key-inp').value.trim();
+    if (!val) return;
+    S.avKey = val;
+    document.getElementById('av-status').textContent = '● Connected';
+    document.getElementById('av-setup').open = false;
+    scheduleSave();
+  });
+
+  // Add stock
+  document.getElementById('add-stock').addEventListener('click', ()=>{
+    S.stocks.push({id:uid(), symbol:'', shares:0, costBasis:0, price:null, change:null, changePct:null, lastFetched:null, name:''});
+    renderStocks(); scheduleSave();
+    setTimeout(()=>{
+      const cards = document.querySelectorAll('.stock-card');
+      if (cards.length) cards[cards.length-1].querySelector('.stock-sym-inp').focus();
+    }, 60);
+  });
+
+  // Refresh stocks
+  document.getElementById('refresh-stocks').addEventListener('click', refreshAllStocks);
+
+  // Stock list delegation
+  const stockList = document.getElementById('stocks-list');
+  stockList.addEventListener('input', e=>{
+    const card = e.target.closest('.stock-card'); if (!card) return;
+    const stock = S.stocks.find(s=>s.id===card.dataset.id); if (!stock) return;
+    if (e.target.matches('.stock-sym-inp')) {
+      stock.symbol = e.target.value.toUpperCase().trim();
+      e.target.value = stock.symbol;
+    }
+    if (e.target.matches('.stock-shares')) stock.shares = +e.target.value||0;
+    if (e.target.matches('.stock-cost')) stock.costBasis = +e.target.value||0;
+    updateStockCard(stock);
+    scheduleSave();
+  });
+
+  stockList.addEventListener('click', e=>{
+    if (!e.target.matches('.stock-rm')) return;
+    const card = e.target.closest('.stock-card');
+    S.stocks = S.stocks.filter(s=>s.id!==card.dataset.id);
+    card.classList.add('out');
+    setTimeout(()=>{ card.remove(); scheduleSave(); }, 200);
+  });
+
+  // Export — download the full state as a JSON backup
+  document.getElementById('export-btn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `debt-tracker-backup-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Import — restore state from a backup file
+  const importFile = document.getElementById('import-file');
+  document.getElementById('import-btn').addEventListener('click', ()=>importFile.click());
+  importFile.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!data || typeof data !== 'object' || !('debts' in data)) {
+          alert("That doesn't look like a Debt Tracker backup file.");
+          return;
+        }
+        if (!confirm('Restoring will replace all data currently in this tracker. Continue?')) return;
+        S = {...DEF, ...data};
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
+        document.getElementById('dash-title').textContent = `${S.userName||'Your'}'s tracker.`;
+        document.getElementById('sal-inp').value = S.salary || '';
+        activeTab = 'all';
+        render();
+        initStocksUI();
+        flashSaved();
+      } catch {
+        alert('Could not read that file — it may be corrupted.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
 }
 
 /* ── Init ─────────────────────────────────────────────────────────────────── */
@@ -1240,6 +1619,7 @@ if (S.userName) {
   if (S.salary) document.getElementById('sal-inp').value = S.salary;
   show('dashboard');
   render();
+  initStocksUI();
   requestAnimationFrame(() => document.body.classList.remove('no-transition'));
 } else {
   show('onboarding');
