@@ -434,12 +434,13 @@ details[open] .ph-chev{transform:rotate(180deg)}
 .auth-field input::placeholder{color:var(--text-dim)}
 .auth-hint{display:block;font-size:.7rem;color:var(--text-dim);margin-top:6px}
 
-#auth-submit{
+#auth-submit,#recovery-submit{
   width:100%;margin-top:8px;background:var(--accent);border:none;color:var(--bg);
   font-family:var(--font-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
   padding:12px 20px;cursor:pointer;transition:opacity 200ms;
 }
-#auth-submit:hover,#preview-btn:hover{opacity:.85}
+#auth-submit:hover,#recovery-submit:hover,#preview-btn:hover{opacity:.85}
+#recovery-submit:disabled{opacity:.45;cursor:default}
 #preview-btn{
   width:100%;margin-top:18px;background:var(--accent);border:none;color:var(--bg);
   font-family:var(--font-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
@@ -733,6 +734,30 @@ input[type="number"]{-moz-appearance:textfield}
       <button type="button" id="preview-btn">Preview without an account →</button>
       <p class="auth-hint preview-hint">Data stays in this browser only and isn't synced.
       This option disappears once Supabase is connected.</p>
+    </div>
+
+    <!-- Shown when the user arrives from a password-reset email. The reset
+         link signs them in with a temporary session; this is where they
+         choose the new password before the dashboard opens. -->
+    <div id="auth-recovery" hidden>
+      <h1 class="ob-q">New password.</h1>
+      <p class="ob-sub">Choose a new password for your account.</p>
+
+      <form id="recovery-form" autocomplete="on" novalidate>
+        <div class="auth-field">
+          <label class="fg-lbl" for="rec-pass">New password</label>
+          <input id="rec-pass" type="password" autocomplete="new-password" required placeholder="••••••••">
+          <span class="auth-hint">At least 8 characters.</span>
+        </div>
+        <div class="auth-field">
+          <label class="fg-lbl" for="rec-pass2">Confirm password</label>
+          <input id="rec-pass2" type="password" autocomplete="new-password" required placeholder="••••••••">
+        </div>
+
+        <div class="auth-msg" id="recovery-msg" role="status" aria-live="polite" hidden></div>
+
+        <button type="submit" id="recovery-submit">Save password →</button>
+      </form>
     </div>
 
     <div id="auth-main">
@@ -1560,10 +1585,74 @@ async function handleForgot() {
   const email = document.getElementById('auth-email').value.trim();
   if (!email) { authMsg('Enter your email above first, then tap reset.'); return; }
   try {
-    const {error} = await sb.auth.resetPasswordForEmail(email, {redirectTo: location.href});
+    // origin + pathname, not location.href: the current URL may still carry a
+    // stale auth hash, which would be doubled into the reset link.
+    const redirectTo = location.origin + location.pathname;
+    const {error} = await sb.auth.resetPasswordForEmail(email, {redirectTo});
     if (error) throw error;
     authMsg(`Password reset link sent to ${email}.`, 'ok');
   } catch (err) { authMsg(friendlyAuthError(err?.message)); }
+}
+
+/* ── Password recovery ──────────────────────────────────────────────────────
+   The reset email links back here with a temporary session. Supabase fires
+   PASSWORD_RECOVERY for it, and in the implicit flow the URL hash also says
+   type=recovery. Either signal parks the user on the new-password form
+   instead of dropping them straight into the dashboard with no way to
+   actually change the password.                                             */
+
+let recoveryPending = /[#&]type=recovery(&|$)/.test(location.hash);
+let recoveryUser = null;
+
+function recoveryMsg(text, kind='err') {
+  const el = document.getElementById('recovery-msg');
+  if (!text) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.className = 'auth-msg' + (kind === 'err' ? '' : ' ' + kind);
+  el.textContent = text;
+}
+
+function showRecovery(user) {
+  recoveryUser = user || recoveryUser;
+  document.getElementById('auth-main').hidden = true;
+  document.getElementById('auth-recovery').hidden = false;
+  recoveryMsg('');
+  show('auth');
+  document.getElementById('rec-pass').focus();
+}
+
+async function handleRecoverySubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('recovery-submit');
+  const p1  = document.getElementById('rec-pass').value;
+  const p2  = document.getElementById('rec-pass2').value;
+
+  if (p1.length < 8) { recoveryMsg('Password must be at least 8 characters.'); return; }
+  if (p1 !== p2)     { recoveryMsg('Those passwords don’t match.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+  recoveryMsg('');
+  try {
+    const {data, error} = await sb.auth.updateUser({password: p1});
+    if (error) throw error;
+    recoveryPending = false;
+    // Drop the recovery tokens from the URL so a reload doesn't re-trigger this.
+    history.replaceState(null, '', location.pathname + location.search);
+    document.getElementById('auth-recovery').hidden = true;
+    document.getElementById('auth-main').hidden = false;
+    document.getElementById('rec-pass').value = '';
+    document.getElementById('rec-pass2').value = '';
+    await enterApp(data?.user || recoveryUser);
+  } catch (err) {
+    const m = (err?.message || '').toLowerCase();
+    recoveryMsg(m.includes('different from the old')
+      ? 'That’s already your password — pick a new one.'
+      : m.includes('session') || m.includes('expired')
+        ? 'This reset link has expired. Go back and request a new one.'
+        : friendlyAuthError(err?.message));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save password →';
+  }
 }
 
 // Two-step inline confirm instead of window.confirm(): embedded browsers
@@ -2266,6 +2355,7 @@ function bindEvents() {
   document.getElementById('auth-toggle').addEventListener('click', ()=>
     setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
   document.getElementById('auth-forgot').addEventListener('click', handleForgot);
+  document.getElementById('recovery-form').addEventListener('submit', handleRecoverySubmit);
   document.getElementById('signout-btn').addEventListener('click', armSignOut);
 
   // Add debt
@@ -2574,22 +2664,40 @@ bindEvents();
   show('boot');
   setAuthMode('signin');
 
+  // Registered before the session check so the PASSWORD_RECOVERY event that
+  // fires while the client parses a reset link is never missed. Also keeps
+  // the app honest if the session ends elsewhere (expiry, sign-out in another
+  // tab); initial and refresh events are ignored so we don't re-enter.
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      recoveryPending = true;
+      showRecovery(session?.user);
+    }
+    if (event === 'SIGNED_OUT' && currentUser) location.reload();
+  });
+
   try {
     const {data:{session}} = await sb.auth.getSession();
-    if (session?.user) { await enterApp(session.user, {restoring: true}); return; }
+    if (session?.user) {
+      if (recoveryPending) { showRecovery(session.user); return; }
+      await enterApp(session.user, {restoring: true});
+      return;
+    }
   } catch { /* fall through to the sign-in screen */ }
+
+  if (recoveryPending) {
+    // Link was opened but the session couldn't be established (expired or
+    // already used). Land on sign-in with a clear message.
+    history.replaceState(null, '', location.pathname + location.search);
+    show('auth');
+    authMsg('That reset link has expired or was already used. Enter your email and tap “Forgot password?” to get a new one.');
+    document.getElementById('auth-email').focus();
+    return;
+  }
 
   show('auth');
   document.getElementById('auth-email').focus();
 })();
-
-// Keep the app honest if the session ends elsewhere (expiry, sign-out in
-// another tab). Ignore the initial and refresh events so we don't re-enter.
-if (CONFIGURED) {
-  sb.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT' && currentUser) location.reload();
-  });
-}
 </script>
 </body>
 </html>
