@@ -2,7 +2,9 @@
 
 A simple debt tracker to help you figure out when you'll be debt-free.
 
-Add your debts, income, and expenses — it shows you the payoff timeline and breaks it into phases so the goal feels reachable.
+**Use it here: https://zay2-2.github.io/FianceDebt/**
+
+Create an account, add your debts, income, and expenses, and it shows you the payoff timeline and breaks it into phases so the goal feels reachable. Your data syncs to your account on every device.
 
 ## What it does
 
@@ -15,11 +17,17 @@ Add your debts, income, and expenses — it shows you the payoff timeline and br
 - **Accounts:** sign in and your tracker syncs across devices
 - Track stocks and export or import a backup of your data
 
-## How to use it
+## How your data is protected
 
-The app needs a free [Supabase](https://supabase.com) project for accounts. Full steps are in [SETUP.md](SETUP.md); the short version:
+Every account's tracker is a single row in a Postgres database, stamped with the account's user id. Row-level security policies compare that id to the signed-in user on every read and write, so the database itself refuses to return anyone else's data. See [`schema.sql`](schema.sql) for the exact policies.
 
-1. Create a Supabase project and run [`schema.sql`](schema.sql) in its SQL Editor.
+The public API key in `index.html` is designed to ship in the browser and grants no access on its own.
+
+## Running your own copy
+
+Want to self-host with your own database? Full steps are in [SETUP.md](SETUP.md); the short version:
+
+1. Create a free [Supabase](https://supabase.com) project and run [`schema.sql`](schema.sql) in its SQL Editor.
 2. Paste your project URL and publishable key into the config block at the top of the script in `index.html`.
 3. Serve the folder and open it in your browser:
 
@@ -35,4 +43,4 @@ Without Supabase keys, the app offers a preview mode that saves to your browser 
 
 ## Built with
 
-Plain HTML, CSS, and JavaScript with no build step. Accounts and storage run on Supabase (PostgreSQL), loaded from a CDN.
+Plain HTML, CSS, and JavaScript with no build step. Accounts and storage run on Supabase (PostgreSQL), loaded from a CDN. Hosted on GitHub Pages.
