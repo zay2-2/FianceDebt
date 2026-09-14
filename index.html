@@ -43,6 +43,15 @@ body::before{
   background:var(--bg);will-change:transform;
 }
 
+/* Boot: a veil over everything until the session check resolves, so a
+   signed-in user never sees the sign-in form flash before their dashboard. */
+#boot-veil{
+  position:fixed;inset:0;z-index:50;display:none;
+  align-items:center;justify-content:center;background:var(--bg);
+  font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);
+}
+[data-screen="boot"] #boot-veil{display:flex}
+
 #screen-onboarding{
   z-index:2;
   transform:translateY(0);opacity:1;
@@ -322,6 +331,7 @@ details[open] .ph-chev{transform:rotate(180deg)}
 }
 @media(hover:hover)and(pointer:fine){.backup-btn:hover{border-color:var(--accent);color:var(--accent)}}
 .backup-btn:active{transform:scale(0.97)}
+.backup-btn.armed{border-color:var(--red);color:var(--red)}
 .backup-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── STOCKS ─────────────────────────────────────────────────────────────── */
@@ -391,8 +401,162 @@ details[open] .ph-chev{transform:rotate(180deg)}
 /* Focus */
 *:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+/* ── AUTH ───────────────────────────────────────────────────────────────── */
+/* Components below set their own display, which would otherwise override the
+   hidden attribute the auth screen uses to toggle fields. */
+[hidden]{display:none!important}
+#screen-auth{
+  z-index:3;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 24px;
+  /* Parked above the viewport and faded; slides in like onboarding does. */
+  transform:translateY(-20%);opacity:0;pointer-events:none;
+  transition:transform 650ms cubic-bezier(0.32,0.72,0,1),opacity 500ms ease-out;
+}
+[data-screen="auth"] #screen-auth{transform:translateY(0);opacity:1;pointer-events:auto}
+/* Onboarding is visible by default in the slide system; tuck it away while
+   the app is booting or asking the user to sign in. */
+[data-screen="auth"] #screen-onboarding,
+[data-screen="boot"] #screen-onboarding{transform:translateY(-20%);opacity:0;pointer-events:none}
+.auth-inner{max-width:340px}
+.auth-inner .ob-q{margin-bottom:8px}
+.auth-inner .ob-sub{margin-bottom:30px}
+
+.auth-field{text-align:left;margin-bottom:18px}
+.auth-field .fg-lbl{display:block;margin-bottom:6px}
+.auth-field input{
+  width:100%;background:transparent;border:none;
+  border-bottom:1px solid var(--border2);color:var(--text);
+  font-family:var(--font-m);font-size:.86rem;
+  padding:7px 0;outline:none;transition:border-color 200ms;
+}
+.auth-field input:focus{border-bottom-color:var(--accent)}
+.auth-field input::placeholder{color:var(--text-dim)}
+.auth-hint{display:block;font-size:.62rem;color:var(--text-dim);margin-top:6px}
+
+#auth-submit{
+  width:100%;margin-top:8px;background:var(--accent);border:none;color:var(--bg);
+  font-family:var(--font-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:12px 20px;cursor:pointer;transition:opacity 200ms;
+}
+#auth-submit:hover,#preview-btn:hover{opacity:.85}
+#preview-btn{
+  width:100%;margin-top:18px;background:var(--accent);border:none;color:var(--bg);
+  font-family:var(--font-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:12px 20px;cursor:pointer;transition:opacity 200ms;
+}
+.preview-hint{text-align:center;line-height:1.6;margin-top:10px}
+#auth-submit:disabled{opacity:.45;cursor:default}
+#auth-submit:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.auth-msg{
+  font-size:.68rem;line-height:1.55;text-align:left;
+  padding:10px 12px;margin-bottom:16px;border-left:2px solid var(--red);
+  background:var(--surface);color:var(--red);
+}
+.auth-msg.ok{border-left-color:var(--green);color:var(--green)}
+.auth-msg.info{border-left-color:var(--accent-dim);color:var(--text-muted)}
+
+.auth-alt{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.auth-link{
+  background:none;border:none;color:var(--accent);cursor:pointer;
+  font-family:var(--font-m);font-size:.68rem;padding:2px;
+  text-decoration:underline;text-underline-offset:3px;transition:opacity 200ms;
+}
+.auth-link:hover{opacity:.75}
+.auth-link.dim{color:var(--text-dim);font-size:.64rem}
+.auth-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.auth-note{
+  font-size:.68rem;line-height:1.6;text-align:left;color:var(--text-muted);
+  border-left:2px solid var(--yellow);background:var(--surface);
+  padding:12px 14px;margin-bottom:8px;
+}
+.auth-note strong{display:block;color:var(--yellow);font-weight:400;margin-bottom:5px}
+.auth-note code{font-size:.64rem;color:var(--text)}
+
+/* Account strip in the dashboard header */
+.acct{display:flex;align-items:center;gap:10px}
+.acct-email{font-size:.62rem;color:var(--text-dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-ind{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);transition:color 300ms}
+.sync-ind[data-s="saving"]{color:var(--text-muted)}
+.sync-ind[data-s="saved"]{color:var(--green)}
+.sync-ind[data-s="offline"]{color:var(--yellow)}
+.sync-ind[data-s="error"]{color:var(--red)}
+
+/* ── STRATEGY ───────────────────────────────────────────────────────────── */
+.strategy-section{margin-top:48px;border-top:1px solid var(--border);padding-top:32px}
+.strat-hd-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;padding-bottom:8px;
+  border-bottom:1px solid var(--border);margin-bottom:14px;
+}
+.mode-toggle{display:flex;gap:1px;background:var(--border)}
+.mode-btn{
+  background:var(--bg);border:none;color:var(--text-muted);
+  font-family:var(--font-m);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:7px 14px;cursor:pointer;transition:color 200ms,background 200ms;
+}
+.mode-btn:hover{color:var(--text)}
+.mode-btn.act{background:var(--accent);color:var(--bg)}
+.mode-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.strat-hint{font-size:.7rem;color:var(--text-muted);max-width:640px;margin-bottom:22px;line-height:1.6}
+
+.strat-controls{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:28px}
+.strat-sub{font-size:.66rem;color:var(--text-dim);margin-top:7px;display:block;line-height:1.5}
+.strat-sub.warn{color:var(--yellow)}
+
+.strat-toggle{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:2px}
+.strat-btn{
+  background:var(--bg);border:none;text-align:left;cursor:pointer;
+  padding:10px 12px;display:flex;flex-direction:column;gap:3px;
+  transition:background 200ms;
+}
+.strat-btn:hover{background:var(--surface)}
+.strat-btn.act{background:var(--surface);box-shadow:inset 2px 0 0 var(--accent)}
+.strat-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sb-ttl{font-family:var(--font-m);font-size:.76rem;color:var(--text-muted);transition:color 200ms}
+.strat-btn.act .sb-ttl{color:var(--accent)}
+.sb-sub{font-size:.6rem;color:var(--text-dim);line-height:1.4}
+
+.strat-results{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:28px}
+.sr-caption{
+  grid-column:1/-1;background:var(--bg);padding:0 0 10px;
+  font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);
+}
+.sr-card{background:var(--bg);padding:20px}
+.sr-lbl{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:9px}
+.sr-val{font-family:var(--font-d);font-size:clamp(1.4rem,2.4vw,2rem);line-height:1;color:var(--text);margin-bottom:8px}
+.sd{font-size:.64rem;letter-spacing:.02em}
+.sd.pos{color:var(--green)}
+.sd.neu{color:var(--text-dim)}
+
+.strat-empty{
+  grid-column:1/-1;background:var(--bg);padding:28px 20px;
+  text-align:center;font-size:.72rem;color:var(--text-dim);
+}
+.strat-infeasible{grid-column:1/-1;background:var(--bg);border-left:2px solid var(--red);padding:16px 18px}
+.si-ttl{font-size:.74rem;color:var(--red);margin-bottom:7px;letter-spacing:.02em}
+.si-body{font-size:.7rem;color:var(--text-muted);line-height:1.65;max-width:620px}
+.si-body strong{color:var(--text);font-weight:500}
+
+.po-hd{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+.po-list{display:flex;flex-direction:column;gap:1px;background:var(--border)}
+.po-row{
+  background:var(--bg);display:grid;
+  grid-template-columns:32px 1fr 64px 100px 100px;
+  align-items:center;gap:10px;padding:11px 12px;font-size:.72rem;
+}
+.po-num{color:var(--text-dim);font-size:.62rem}
+.po-name{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.po-apr,.po-bal{text-align:right;color:var(--text-muted)}
+.po-mm{text-align:right;color:var(--accent)}
+
 /* Responsive */
 @media(max-width:980px){
+  .strat-controls{grid-template-columns:1fr;gap:24px}
+  .strat-results{grid-template-columns:1fr}
   .main-grid{grid-template-columns:1fr;gap:40px}
   .metrics{grid-template-columns:repeat(2,1fr)}
   .phases-grid{grid-template-columns:1fr}
@@ -402,6 +566,11 @@ details[open] .ph-chev{transform:rotate(180deg)}
   .dash-inner{padding:0 16px 60px}
   .mc{padding:16px}
   .main-grid{margin-top:28px}
+  .strat-toggle{grid-template-columns:1fr}
+  .po-row{grid-template-columns:24px 1fr 84px;row-gap:4px}
+  .po-apr{display:none}
+  .po-bal{grid-column:2/3;text-align:left;font-size:.66rem;color:var(--text-dim)}
+  .po-mm{grid-column:3/4}
 }
 
 .no-transition *{transition:none!important}
@@ -546,7 +715,59 @@ input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0
 input[type="number"]{-moz-appearance:textfield}
 </style>
 </head>
-<body data-screen="onboarding">
+<body data-screen="boot">
+
+<div id="boot-veil">Loading your tracker…</div>
+
+<!-- ── SCREEN 0: AUTH ────────────────────────────────────────────────────── -->
+<div id="screen-auth" class="screen">
+  <div class="ob-inner auth-inner">
+    <p class="ob-tag">Debt Tracker</p>
+
+    <div id="auth-unconfigured" class="auth-note" hidden>
+      <strong>Not connected yet.</strong>
+      Add your Supabase project URL and anon key at the top of the
+      <code>&lt;script&gt;</code> block in index.html, then reload.
+    </div>
+    <div id="preview-wrap" hidden>
+      <button type="button" id="preview-btn">Preview without an account →</button>
+      <p class="auth-hint preview-hint">Data stays in this browser only and isn't synced.
+      This option disappears once Supabase is connected.</p>
+    </div>
+
+    <div id="auth-main">
+      <h1 class="ob-q" id="auth-title">Sign in.</h1>
+      <p class="ob-sub" id="auth-sub">Your data is tied to your account, on every device.</p>
+
+      <form id="auth-form" autocomplete="on" novalidate>
+        <div class="auth-field" id="auth-name-wrap" hidden>
+          <label class="fg-lbl" for="auth-name">Your name</label>
+          <input id="auth-name" type="text" autocomplete="given-name" placeholder="First name is fine">
+        </div>
+        <div class="auth-field">
+          <label class="fg-lbl" for="auth-email">Email</label>
+          <input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+        <div class="auth-field">
+          <label class="fg-lbl" for="auth-pass">Password</label>
+          <input id="auth-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
+          <span class="auth-hint" id="auth-pass-hint" hidden>At least 8 characters.</span>
+        </div>
+
+        <div class="auth-msg" id="auth-msg" role="status" aria-live="polite" hidden></div>
+
+        <button type="submit" id="auth-submit">Sign in →</button>
+      </form>
+
+      <div class="auth-alt">
+        <button type="button" class="auth-link" id="auth-toggle">
+          New here? Create an account
+        </button>
+        <button type="button" class="auth-link dim" id="auth-forgot">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── SCREEN 1: ONBOARDING ──────────────────────────────────────────────── -->
 <div id="screen-onboarding" class="screen">
@@ -567,16 +788,18 @@ input[type="number"]{-moz-appearance:textfield}
   <header class="dash-hdr">
     <h1 id="dash-title">Your tracker.</h1>
     <div class="hdr-right">
-      <span id="saved-ind" aria-live="polite">● Saved</span>
+      <span id="saved-ind" class="sync-ind" aria-live="polite">● Saved</span>
+      <span class="acct-email" id="acct-email"></span>
       <button id="export-btn" class="backup-btn" title="Download a backup of all your data">↓ Export</button>
       <button id="import-btn" class="backup-btn" title="Restore from a backup file">↑ Import</button>
       <input id="import-file" type="file" accept="application/json,.json" hidden>
+      <button id="signout-btn" class="backup-btn" title="Sign out of this account">Sign out</button>
     </div>
   </header>
 
   <div class="metrics" role="region" aria-label="Summary metrics">
     <div class="mc"><div class="mc-lbl">Total Debt Remaining</div><div class="mc-val" id="m-bal" data-v="0">—</div></div>
-    <div class="mc"><div class="mc-lbl">Required Payment / Mo</div><div class="mc-val" id="m-pay" data-v="0">—</div></div>
+    <div class="mc"><div class="mc-lbl" id="m-pay-lbl">Required Payment / Mo</div><div class="mc-val" id="m-pay" data-v="0">—</div></div>
     <div class="mc"><div class="mc-lbl">Total Interest Owed</div><div class="mc-val" id="m-int" data-v="0">—</div></div>
     <div class="mc"><div class="mc-lbl">Monthly Surplus</div><div class="mc-val" id="m-sur" data-v="0">—</div></div>
   </div>
@@ -649,6 +872,55 @@ input[type="number"]{-moz-appearance:textfield}
     </div>
 
   </div>
+
+  <!-- ── STRATEGY ───────────────────────────────────────────────────────── -->
+  <section class="strategy-section" aria-label="Payoff strategy">
+    <div class="strat-hd-row">
+      <div class="s-hd" style="margin:0;border:none;padding:0">Payoff Strategy</div>
+      <div class="mode-toggle" role="tablist" aria-label="Planning mode">
+        <button class="mode-btn" data-mode="target" role="tab">Target date</button>
+        <button class="mode-btn" data-mode="budget" role="tab">Monthly budget</button>
+      </div>
+    </div>
+
+    <p class="strat-hint" id="strat-hint"></p>
+
+    <div class="strat-body" id="strat-body">
+      <div class="strat-controls">
+        <div class="fg">
+          <span class="fg-lbl">EXTRA PAYMENT / MO — <span id="extra-disp">$0</span></span>
+          <div class="apr-row">
+            <div class="sym" style="width:92px">
+              <span>$</span>
+              <input type="number" id="extra-num" class="ii ra" value="" placeholder="0"
+                     min="0" step="10" inputmode="decimal" aria-label="Extra monthly payment">
+            </div>
+            <input type="range" id="extra-slider" class="apr-slider"
+                   value="0" min="0" max="2000" step="10" aria-label="Extra monthly payment slider">
+          </div>
+          <span class="strat-sub" id="extra-sub"></span>
+        </div>
+
+        <div class="fg">
+          <span class="fg-lbl">METHOD</span>
+          <div class="strat-toggle">
+            <button class="strat-btn" data-strategy="avalanche">
+              <span class="sb-ttl">Avalanche</span>
+              <span class="sb-sub">Highest APR first — cheapest</span>
+            </button>
+            <button class="strat-btn" data-strategy="snowball">
+              <span class="sb-ttl">Snowball</span>
+              <span class="sb-sub">Smallest balance first — fastest wins</span>
+            </button>
+          </div>
+          <span class="strat-sub" id="strategy-sub"></span>
+        </div>
+      </div>
+
+      <div class="strat-results" id="strat-results"></div>
+      <div class="payoff-order" id="payoff-order"></div>
+    </div>
+  </section>
 
   <!-- ── STOCKS ─────────────────────────────────────────────────────────── -->
   <section class="stocks-section" aria-label="Stock tracker">
@@ -753,8 +1025,28 @@ input[type="number"]{-moz-appearance:textfield}
 </div><!-- /.dash-inner -->
 </div><!-- /#screen-dashboard -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 'use strict';
+
+/* ── Supabase config ──────────────────────────────────────────────────────────
+   Paste your project's values here (Supabase → Project Settings → API).
+
+   The anon key is meant to be public — it ships in every Supabase web app. It
+   grants no data access on its own; row-level security in schema.sql is what
+   decides which rows a request may touch. Never paste the service_role key
+   here: that one bypasses RLS entirely and must stay server-side.           */
+
+const SUPABASE_URL      = 'https://yllbbpyueywjkicfvmbs.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_XwZQwwdUfZgPTA_r3ieA2w_gn1REJkv';
+
+const CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+const sb = CONFIGURED
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    })
+  : null;
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 
@@ -781,24 +1073,94 @@ const KEY = 'debtTracker_v1';
 const DEF = {
   userName:'', globalTarget:'2026-12',
   debts:[], salary:0, income:[], expenses:[],
-  avKey:'', stocks:[]
+  avKey:'', stocks:[],
+  // Payoff strategy engine. 'target' solves for the payment a deadline demands;
+  // 'budget' solves for the date a payment achieves.
+  mode:'target', strategy:'avalanche', extraPmt:0
 };
 
 let S;
+let currentUser = null;
 
-function load() {
-  try { const r = localStorage.getItem(KEY); return r ? {...DEF,...JSON.parse(r)} : {...DEF}; }
-  catch { return {...DEF}; }
+/* ── Persistence ──────────────────────────────────────────────────────────────
+   Supabase is the source of truth; localStorage is a per-user cache so the app
+   opens instantly and keeps working offline.
+
+   The cache key is namespaced by user id. That matters: a shared key is exactly
+   how one person's tracker ended up under another person's name before there
+   were accounts, and the same trap exists locally the moment two people use one
+   browser.                                                                   */
+
+const LEGACY_KEY = KEY;                       // pre-accounts, unowned blob
+const cacheKey = uid => `${KEY}_${uid}`;
+
+function readCache(uid) {
+  try { const r = localStorage.getItem(cacheKey(uid)); return r ? JSON.parse(r) : null; }
+  catch { return null; }
+}
+function writeCache(uid, data) {
+  try { localStorage.setItem(cacheKey(uid), JSON.stringify(data)); } catch{}
 }
 
-let _st;
+// Fetch the signed-in user's tracker. Falls back to cache when the network is
+// unavailable so a flaky connection degrades instead of showing an empty app.
+async function loadTracker(uid) {
+  if (!sb) return {...DEF, ...(readCache(uid) || {})};   // local preview
+  try {
+    const {data, error} = await sb
+      .from('trackers').select('data').eq('user_id', uid).maybeSingle();
+    if (error) throw error;
+    const remote = data?.data && Object.keys(data.data).length ? data.data : null;
+    if (remote) { writeCache(uid, remote); return {...DEF, ...remote}; }
+    // Row exists but is empty (fresh account) — nothing to merge.
+    return {...DEF, ...(readCache(uid) || {})};
+  } catch (e) {
+    setSync('offline');
+    return {...DEF, ...(readCache(uid) || {})};
+  }
+}
+
+let _st, _dirty = false, _inflight = false;
+
 function scheduleSave() {
+  if (!currentUser) return;
+  writeCache(currentUser.id, S);      // cache immediately; never lose a keystroke
+  _dirty = true;
   clearTimeout(_st);
-  _st = setTimeout(()=>{
-    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
-    flashSaved();
-  }, 800);
+  _st = setTimeout(pushTracker, 800);
 }
+
+async function pushTracker() {
+  if (!currentUser || !_dirty || _inflight) return;
+  // Local preview: the cache written in scheduleSave is the only store.
+  if (!sb) { _dirty = false; setSync('local'); return; }
+  _inflight = true;
+  setSync('saving');
+  const snapshot = JSON.parse(JSON.stringify(S));
+  try {
+    const {error} = await sb.from('trackers')
+      .upsert({user_id: currentUser.id, data: snapshot}, {onConflict: 'user_id'});
+    if (error) throw error;
+    // Only clear the flag if nothing changed while the request was in flight.
+    if (JSON.stringify(S) === JSON.stringify(snapshot)) _dirty = false;
+    setSync('saved');
+  } catch (e) {
+    setSync(navigator.onLine ? 'error' : 'offline');
+  } finally {
+    _inflight = false;
+    if (_dirty) clearTimeout(_st), _st = setTimeout(pushTracker, 2000);
+  }
+}
+
+// Retry as soon as connectivity returns.
+window.addEventListener('online', () => { if (_dirty) pushTracker(); });
+window.addEventListener('offline', () => setSync('offline'));
+
+// Last-ditch flush when the tab goes away. keepalive lets the request outlive
+// the page; the cache write above is what actually guarantees no data loss.
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && _dirty) pushTracker();
+});
 
 /* ── Math ─────────────────────────────────────────────────────────────────── */
 
@@ -828,7 +1190,146 @@ function calcDebt(debt) {
   return {pmt, totalInt, rows};
 }
 
+/* ── Budget-mode simulator ────────────────────────────────────────────────
+   Given a fixed monthly budget, march forward month by month until every
+   balance clears. Each debt takes its minimum first; whatever is left pours
+   into a single focus debt chosen by strategy. Holding the budget constant is
+   what creates the rollover — as a debt clears, its freed minimum is absorbed
+   by the pool automatically, so no separate rollover bookkeeping is needed. */
+
+const MAX_MONTHS = 600;
+
+// The floor a budget must clear to make any progress at all: one month of
+// interest across every balance. At or below this, principal never falls.
+function interestFloor(debts) {
+  return debts.reduce((s,d)=> s + (+d.balance||0) * (((+d.apr||0)/100)/12), 0);
+}
+
+function suggestedMin(debt) {
+  const b = +debt.balance||0;
+  if (b <= 0) return 0;
+  return Math.max(25, b*0.02);
+}
+
+function simulateBudget(extra, strategy) {
+  const live = S.debts
+    .filter(d => (+d.balance||0) > 0)
+    .map(d => ({
+      id: d.id,
+      bal: +d.balance||0,
+      r: ((+d.apr||0)/100)/12,
+      apr: +d.apr||0,
+      min: +d.minPmt||0,
+      rows: []
+    }));
+
+  if (!live.length) {
+    return {rows:{}, combined:[], months:0, totalInt:0, budget:0, infeasible:false, order:[], payoffMM:null};
+  }
+
+  const budget = live.reduce((s,d)=>s+d.min, 0) + Math.max(0, +extra||0);
+  const floor  = interestFloor(S.debts);
+
+  // Never even covers the interest — bail before burning 600 iterations.
+  if (budget <= floor + 0.005) {
+    return {rows:{}, combined:[], months:0, totalInt:0, budget, infeasible:true,
+            minViable:floor, order:[], payoffMM:null};
+  }
+
+  const combined = [];
+  const order = [];
+  let totalInt = 0, months = 0;
+  const now = new Date();
+
+  for (let i = 0; i < MAX_MONTHS; i++) {
+    const open = live.filter(d => d.bal > 0.005);
+    if (!open.length) break;
+
+    const d0 = new Date(now.getFullYear(), now.getMonth()+i+1, 1);
+    const mm = `${d0.getFullYear()}-${String(d0.getMonth()+1).padStart(2,'0')}`;
+
+    // Interest accrues on every open balance before anything is applied.
+    const accrued = new Map();
+    open.forEach(d => { const int = d.bal*d.r; accrued.set(d.id, int); totalInt += int; });
+
+    let pool = budget;
+    const paid = new Map(open.map(d=>[d.id, 0]));
+
+    // Pass 1 — minimums, capped at the full payoff amount so we never overpay.
+    for (const d of open) {
+      const owed = d.bal + accrued.get(d.id);
+      const p = Math.min(d.min, owed, pool);
+      paid.set(d.id, p);
+      pool -= p;
+    }
+
+    // Pass 2 — everything left goes to the focus debt, in strategy order.
+    // Anything a debt can't absorb falls through to the next one.
+    const focus = [...open].sort((a,b) => strategy === 'snowball'
+      ? a.bal - b.bal
+      : b.apr - a.apr || a.bal - b.bal);
+
+    for (const d of focus) {
+      if (pool <= 0.005) break;
+      const owed = d.bal + accrued.get(d.id);
+      const room = owed - paid.get(d.id);
+      if (room <= 0.005) continue;
+      const p = Math.min(room, pool);
+      paid.set(d.id, paid.get(d.id) + p);
+      pool -= p;
+    }
+
+    // Settle the month.
+    let mInt = 0, mPri = 0, mPmt = 0;
+    for (const d of open) {
+      const int = accrued.get(d.id), pay = paid.get(d.id);
+      const pri = pay - int;                 // negative when the payment can't cover interest
+      d.bal = Math.max(0, d.bal - pri);
+      d.rows.push({mm, pmt:pay, int, pri, bal:d.bal});
+      mInt += int; mPri += pri; mPmt += pay;
+      if (d.bal <= 0.005 && !order.find(o=>o.id===d.id)) order.push({id:d.id, mm});
+    }
+
+    const totBal = live.reduce((s,d)=>s+d.bal, 0);
+    combined.push({mm, pmt:mPmt, int:mInt, pri:mPri, bal:totBal});
+    months = i+1;
+
+    if (totBal <= 0.005) break;
+  }
+
+  // Ran the clock out without clearing — treat as infeasible rather than
+  // reporting a bogus 50-year payoff date.
+  const cleared = live.every(d => d.bal <= 0.005);
+  if (!cleared) {
+    return {rows:{}, combined:[], months:0, totalInt:0, budget, infeasible:true,
+            minViable:floor, order:[], payoffMM:null};
+  }
+
+  const rows = {};
+  live.forEach(d => { rows[d.id] = d.rows; });
+
+  return {
+    rows, combined, months, totalInt, budget,
+    infeasible:false,
+    order,
+    payoffMM: combined.length ? combined[combined.length-1].mm : null
+  };
+}
+
+/* Baseline (minimums only) vs. the user's extra, for both strategies, so the
+   UI can show what the extra payment and the strategy choice each buy. */
+function strategyCompare() {
+  const extra = +S.extraPmt||0;
+  return {
+    base:      simulateBudget(0, S.strategy),
+    current:   simulateBudget(extra, S.strategy),
+    avalanche: simulateBudget(extra, 'avalanche'),
+    snowball:  simulateBudget(extra, 'snowball')
+  };
+}
+
 function calcAll() {
+  if (S.mode === 'budget') return calcAllBudget();
   const dr = S.debts.map(d => ({d, ...calcDebt(d)}));
   const totOrig = S.debts.reduce((s,d)=>s+(+d.origBal||0), 0);
   const totBal  = S.debts.reduce((s,d)=>s+(+d.balance||0), 0);
@@ -856,6 +1357,40 @@ function calcAll() {
   return {dr, totOrig, totBal, totPmt, totInt, totInc, totExp, surplus, pct, status, combined};
 }
 
+/* Budget mode returns the same shape as calcAll so renderTable/renderTabs/
+   renderMetrics keep working untouched — the simulator just swaps in as the
+   source of the schedule. */
+function calcAllBudget() {
+  const cmp = strategyCompare();
+  const sim = cmp.current;
+
+  const dr = S.debts.map(d => {
+    const rows = sim.rows[d.id] || [];
+    return {
+      d, rows,
+      pmt: rows.length ? rows[0].pmt : 0,
+      totalInt: rows.reduce((s,r)=>s+r.int, 0)
+    };
+  });
+
+  const totOrig = S.debts.reduce((s,d)=>s+(+d.origBal||0), 0);
+  const totBal  = S.debts.reduce((s,d)=>s+(+d.balance||0), 0);
+  const totPmt  = sim.budget;
+  const totInt  = sim.totalInt;
+  const totInc  = (+S.salary||0) + S.income.reduce((s,i)=>s+(+i.amt||0),0);
+  const totExp  = S.expenses.reduce((s,e)=>s+(+e.amt||0),0);
+  const surplus = totInc - totExp - totPmt;
+  const pct = totOrig>0 ? Math.max(0,Math.min(1,1-totBal/totOrig)) : 0;
+
+  let status = 'not-feasible';
+  if (sim.infeasible) status = 'not-feasible';
+  else if (surplus < 0) status = 'not-feasible';
+  else if (totInc>0) status = surplus > 0.2*totInc ? 'on-track' : 'tight';
+
+  return {dr, totOrig, totBal, totPmt, totInt, totInc, totExp, surplus, pct,
+          status, combined:sim.combined, sim, cmp};
+}
+
 /* ── Counter animation ────────────────────────────────────────────────────── */
 
 function counter(el, val, signed) {
@@ -878,11 +1413,20 @@ function counter(el, val, signed) {
 /* ── Saved flash ──────────────────────────────────────────────────────────── */
 
 let _sv;
-function flashSaved() {
+const SYNC_TEXT = {
+  saving:'● Saving…', saved:'● Saved',
+  offline:'● Offline — saved on this device', error:'● Sync failed — retrying',
+  local:'● Saved on this device'
+};
+function setSync(state) {
   const el = document.getElementById('saved-ind');
+  if (!el) return;
+  el.dataset.s = state;
+  el.textContent = SYNC_TEXT[state] || '';
   el.classList.add('on');
   clearTimeout(_sv);
-  _sv = setTimeout(()=>el.classList.remove('on'), 2000);
+  // Only the transient success state fades; problems stay on screen.
+  if (state === 'saved' || state === 'local') _sv = setTimeout(()=>el.classList.remove('on'), 2000);
 }
 
 /* ── Screen ───────────────────────────────────────────────────────────────── */
@@ -916,6 +1460,203 @@ function initPhaseReveal() {
   cards.forEach(c => obs.observe(c));
 }
 
+/* ── Auth ─────────────────────────────────────────────────────────────────── */
+
+let authMode = 'signin';   // 'signin' | 'signup'
+
+function authMsg(text, kind='err') {
+  const el = document.getElementById('auth-msg');
+  if (!text) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.className = 'auth-msg' + (kind === 'err' ? '' : ' ' + kind);
+  el.textContent = text;
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const up = mode === 'signup';
+  document.getElementById('auth-title').textContent = up ? 'Create an account.' : 'Sign in.';
+  document.getElementById('auth-sub').textContent = up
+    ? 'Your tracker syncs to this account on every device.'
+    : 'Your data is tied to your account, on every device.';
+  document.getElementById('auth-submit').textContent = up ? 'Create account →' : 'Sign in →';
+  document.getElementById('auth-toggle').textContent = up
+    ? 'Already have an account? Sign in'
+    : 'New here? Create an account';
+  document.getElementById('auth-name-wrap').hidden = !up;
+  document.getElementById('auth-pass-hint').hidden = !up;
+  document.getElementById('auth-pass').autocomplete = up ? 'new-password' : 'current-password';
+  document.getElementById('auth-forgot').hidden = up;
+  authMsg('');
+}
+
+// Supabase surfaces raw API text; translate the ones users actually hit.
+function friendlyAuthError(msg='') {
+  const m = msg.toLowerCase();
+  if (m.includes('invalid login')) return 'That email and password don’t match an account.';
+  if (m.includes('already registered')) return 'An account with that email already exists — sign in instead.';
+  if (m.includes('email not confirmed')) return 'Check your inbox and confirm your email first.';
+  if (m.includes('password should be')) return 'Password must be at least 8 characters.';
+  if (m.includes('email address') && m.includes('invalid'))
+    return 'Supabase rejected that email address. Use a real inbox you can open.';
+  if (m.includes('signups not allowed') || m.includes('signup is disabled'))
+    return 'New sign-ups are turned off for this project (Supabase → Authentication → Sign In / Providers).';
+  // Supabase's built-in mailer allows only a few emails per hour, so an email
+  // rate limit is not a "wait a minute" situation.
+  if (m.includes('email rate limit'))
+    return 'Supabase’s email limit is used up for now (a few per hour). Try again later, ' +
+           'or create the user under Authentication → Users with “Auto Confirm User”.';
+  if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts — wait a minute and try again.';
+  if (m.includes('failed to fetch')) return 'Can’t reach the server. Check your connection.';
+  return msg || 'Something went wrong. Try again.';
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('auth-submit');
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-pass').value;
+  const name  = document.getElementById('auth-name').value.trim();
+
+  if (!email || !pass) { authMsg('Enter your email and password.'); return; }
+  if (authMode === 'signup' && pass.length < 8) {
+    authMsg('Password must be at least 8 characters.'); return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'signup' ? 'Creating…' : 'Signing in…';
+  authMsg('');
+
+  try {
+    if (authMode === 'signup') {
+      const {data, error} = await sb.auth.signUp({
+        email, password: pass,
+        options: { data: { display_name: name || null } }
+      });
+      if (error) throw error;
+      // With email confirmation on, there's no session yet.
+      if (!data.session) {
+        setAuthMode('signin');   // switch first — it clears the message area
+        authMsg(`Account created. Check ${email} for a confirmation link, then sign in.`, 'ok');
+        return;
+      }
+      await enterApp(data.session.user, {nameHint: name});
+    } else {
+      const {data, error} = await sb.auth.signInWithPassword({email, password: pass});
+      if (error) throw error;
+      await enterApp(data.user);
+    }
+  } catch (err) {
+    authMsg(friendlyAuthError(err?.message));
+  } finally {
+    // Restore only the button. setAuthMode() would also clear #auth-msg,
+    // erasing the error we just displayed.
+    btn.disabled = false;
+    btn.textContent = authMode === 'signup' ? 'Create account →' : 'Sign in →';
+  }
+}
+
+async function handleForgot() {
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) { authMsg('Enter your email above first, then tap reset.'); return; }
+  try {
+    const {error} = await sb.auth.resetPasswordForEmail(email, {redirectTo: location.href});
+    if (error) throw error;
+    authMsg(`Password reset link sent to ${email}.`, 'ok');
+  } catch (err) { authMsg(friendlyAuthError(err?.message)); }
+}
+
+// Two-step inline confirm instead of window.confirm(): embedded browsers
+// (webviews, iframes, some in-app browsers) silently block native dialogs,
+// which returns false and made sign-out appear to do nothing.
+let _soArm = null;
+function armSignOut() {
+  const btn = document.getElementById('signout-btn');
+  if (_soArm) {                          // second click: go
+    clearTimeout(_soArm); _soArm = null;
+    btn.textContent = 'Signing out…'; btn.disabled = true;
+    signOut();
+    return;
+  }
+  btn.textContent = 'Confirm sign out';
+  btn.classList.add('armed');
+  _soArm = setTimeout(()=>{
+    _soArm = null;
+    btn.textContent = 'Sign out';
+    btn.classList.remove('armed');
+  }, 4000);
+}
+
+async function signOut() {
+  if (_dirty) await pushTracker();      // don't strand unsaved edits
+  await sb.auth.signOut();
+  currentUser = null;
+  S = {...DEF};
+  location.reload();
+}
+
+/* Adopt a pre-accounts localStorage tracker into a brand-new account. Only
+   offered when the account is genuinely empty, and only with consent — the
+   legacy blob may belong to whoever used this browser last. */
+async function offerLegacyImport(uid) {
+  let legacy = null;
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (raw) legacy = JSON.parse(raw);
+  } catch { return false; }
+  if (!legacy || !Array.isArray(legacy.debts) || !legacy.debts.length) return false;
+
+  const total = legacy.debts.reduce((s,d)=>s+(+d.balance||0), 0);
+  const who = legacy.userName ? `saved under the name “${legacy.userName}”` : 'saved in this browser';
+  const ok = confirm(
+    `This browser has an older tracker ${who}, with ` +
+    `${legacy.debts.length} debt${legacy.debts.length===1?'':'s'} totalling $${fmt(total,2)}.\n\n` +
+    `Import it into your new account?\n\n` +
+    `OK — import it.\nCancel — start empty (the old data stays in this browser).`
+  );
+  if (!ok) return false;
+
+  S = {...DEF, ...legacy};
+  writeCache(uid, S);
+  _dirty = true;
+  await pushTracker();
+  return true;
+}
+
+/* Single entry point once a session exists. */
+async function enterApp(user, {nameHint, restoring = false} = {}) {
+  currentUser = user;
+  S = await loadTracker(user.id);
+
+  const fresh = !S.debts.length && !S.income.length && !S.expenses.length && !S.userName;
+  if (fresh) await offerLegacyImport(user.id);
+
+  if (!S.userName) {
+    S.userName = nameHint || user.user_metadata?.display_name || '';
+    if (S.userName) scheduleSave();
+  }
+
+  document.getElementById('acct-email').textContent = user.email || '';
+  document.getElementById('sal-inp').value = S.salary || '';
+
+  if (!S.userName) {
+    show('onboarding');
+  } else {
+    document.getElementById('dash-title').textContent = `${S.userName}'s tracker.`;
+    if (restoring) {
+      document.body.classList.add('no-transition');
+      show('dashboard');
+      render(); initStrategyUI(); initStocksUI();
+      requestAnimationFrame(() => document.body.classList.remove('no-transition'));
+    } else {
+      document.body.classList.add('dashboard-entering');
+      show('dashboard');
+      render(); initStrategyUI(); initStocksUI();
+      setTimeout(() => document.body.classList.remove('dashboard-entering'), 1300);
+    }
+  }
+}
+
 /* ── Render ───────────────────────────────────────────────────────────────── */
 
 let activeTab = 'all', R;
@@ -924,13 +1665,15 @@ let _phaseRevealInit = false;
 function render() {
   R = calcAll();
   renderMetrics(); renderProgress(); renderDebts();
-  renderIncome(); renderExpenses(); renderTable();
+  renderIncome(); renderExpenses(); renderTable(); renderStrategy();
   if (!_phaseRevealInit) { _phaseRevealInit = true; initPhaseReveal(); }
 }
 
 function renderMetrics() {
   const {totBal,totPmt,totInt,surplus,totInc} = R;
   const hasData = totBal>0||totPmt>0;
+  document.getElementById('m-pay-lbl').textContent =
+    S.mode === 'budget' ? 'Your Payment / Mo' : 'Required Payment / Mo';
   if (hasData) {
     animateMetrics();
     counter(document.getElementById('m-bal'), totBal);
@@ -1039,6 +1782,20 @@ function mkDebtCard(debt) {
                  inputmode="decimal" aria-label="Current balance">
         </div>
       </div>
+      <div class="fg">
+        <span class="fg-lbl">MIN PAYMENT / MO</span>
+        <div class="sym">
+          <span>$</span>
+          <input type="number" class="debt-min ii ra"
+                 value="${+debt.minPmt||''}" placeholder="${fmt(suggestedMin(debt),0)}"
+                 min="0" step="0.01" inputmode="decimal" aria-label="Minimum monthly payment">
+        </div>
+      </div>
+      <div class="fg">
+        <span class="fg-lbl">TARGET DATE</span>
+        <input type="month" class="debt-target ii"
+               value="${debt.target||S.globalTarget}" aria-label="Target payoff date">
+      </div>
       <div class="fg fg-full">
         <span class="fg-lbl">APR — <span class="apr-disp">${(+debt.apr||0).toFixed(2)}%</span></span>
         <div class="apr-row">
@@ -1049,11 +1806,6 @@ function mkDebtCard(debt) {
           <input type="range" class="apr-slider"
                  value="${+debt.apr||0}" min="0" max="36" step="0.01" aria-label="APR slider">
         </div>
-      </div>
-      <div class="fg">
-        <span class="fg-lbl">TARGET DATE</span>
-        <input type="month" class="debt-target ii"
-               value="${debt.target||S.globalTarget}" aria-label="Target payoff date">
       </div>
     </div>
     ${b<=0&&ob>0?'<div class="paid-badge">✓ PAID OFF</div>':''}
@@ -1177,6 +1929,143 @@ function renderTable() {
       <td class="r bal">$${fmt(r.bal,2)}</td>
     </tr>
   `).join('');
+}
+
+/* ── Strategy ─────────────────────────────────────────────────────────────── */
+
+const plural = (n,w) => `${n} ${w}${n===1?'':'s'}`;
+
+function renderStrategy() {
+  const body = document.getElementById('strat-body');
+  const hint = document.getElementById('strat-hint');
+
+  document.querySelectorAll('.mode-btn').forEach(b =>
+    b.classList.toggle('act', b.dataset.mode === S.mode));
+  document.querySelectorAll('.strat-btn').forEach(b =>
+    b.classList.toggle('act', b.dataset.strategy === S.strategy));
+
+  if (S.mode !== 'budget') {
+    body.style.display = 'none';
+    hint.textContent = 'Solving for the payment your target dates demand. Switch to Monthly budget to ask the reverse — how fast a payment you can actually afford would clear everything.';
+    return;
+  }
+  body.style.display = '';
+  hint.textContent = 'Every debt gets its minimum; whatever is left attacks one debt at a time. As each clears, its payment rolls into the next.';
+
+  const extra = +S.extraPmt||0;
+  document.getElementById('extra-disp').textContent = '$'+fmt(extra,0);
+
+  const results = document.getElementById('strat-results');
+  const orderEl = document.getElementById('payoff-order');
+
+  if (!S.debts.some(d => (+d.balance||0) > 0)) {
+    results.innerHTML = `<div class="strat-empty">Add a debt with a balance to model a payoff.</div>`;
+    orderEl.innerHTML = '';
+    document.getElementById('extra-sub').textContent = '';
+    document.getElementById('strategy-sub').textContent = '';
+    return;
+  }
+
+  const {base, current, avalanche, snowball} = R.cmp;
+
+  // Surplus context for the extra-payment field.
+  const room = R.totInc - R.totExp - current.budget + extra;
+  const subEl = document.getElementById('extra-sub');
+  if (R.totInc > 0) {
+    subEl.textContent = room >= 0
+      ? `You have about $${fmt(Math.max(0,room),0)}/mo of surplus to work with.`
+      : `This is $${fmt(Math.abs(room),0)}/mo beyond your income.`;
+    subEl.classList.toggle('warn', room < 0);
+  } else {
+    subEl.textContent = ''; subEl.classList.remove('warn');
+  }
+
+  if (current.infeasible) {
+    const need = Math.ceil((current.minViable||0)/10)*10;
+    results.innerHTML = `
+      <div class="strat-infeasible">
+        <div class="si-ttl">This budget never clears the debt.</div>
+        <div class="si-body">At $${fmt(current.budget,0)}/mo you aren't covering the
+        $${fmt(current.minViable||0,2)}/mo of interest these balances accrue, so they grow
+        instead of shrinking. You need at least <strong>$${fmt(need,0)}/mo</strong> just to
+        break even — raise the minimums or the extra payment above that to see a payoff date.</div>
+      </div>`;
+    orderEl.innerHTML = '';
+    document.getElementById('strategy-sub').textContent = '';
+    return;
+  }
+
+  // What the extra payment buys, against minimums only.
+  const savedInt = base.infeasible ? null : base.totalInt - current.totalInt;
+  const savedMo  = base.infeasible ? null : base.months - current.months;
+
+  // Deltas are all measured against paying minimums only, under the same
+  // method — so the caption states the reference once instead of each card
+  // implying its own.
+  const deltaLine = (val, txt) => val == null
+    ? `<span class="sd neu">minimums alone never pay it off</span>`
+    : val > 0 ? `<span class="sd pos">${txt}</span>`
+              : `<span class="sd neu">no change</span>`;
+
+  results.innerHTML = `
+    <div class="sr-caption">Compared with paying minimums only, using ${S.strategy}:</div>`+`
+    <div class="sr-card">
+      <div class="sr-lbl">Debt-Free Date</div>
+      <div class="sr-val">${current.payoffMM ? monthLabel(current.payoffMM) : '—'}</div>
+      ${deltaLine(savedMo, `${plural(savedMo,'month')} sooner`)}
+    </div>
+    <div class="sr-card">
+      <div class="sr-lbl">Time to Freedom</div>
+      <div class="sr-val">${plural(current.months,'month')}</div>
+      <span class="sd neu">${(current.months/12).toFixed(1)} years at $${fmt(current.budget,0)}/mo</span>
+    </div>
+    <div class="sr-card">
+      <div class="sr-lbl">Total Interest</div>
+      <div class="sr-val">$${fmt(current.totalInt,2)}</div>
+      ${deltaLine(savedInt, `$${fmt(Math.abs(savedInt||0),2)} saved`)}
+    </div>
+  `;
+
+  // What the method choice buys, holding the extra payment fixed.
+  const stratSub = document.getElementById('strategy-sub');
+  if (!avalanche.infeasible && !snowball.infeasible) {
+    const diff = snowball.totalInt - avalanche.totalInt;
+    if (Math.abs(diff) < 0.5) {
+      stratSub.textContent = 'Both methods cost the same here — pick whichever keeps you going.';
+    } else if (S.strategy === 'avalanche') {
+      stratSub.textContent = `Avalanche saves you $${fmt(Math.abs(diff),2)} more than snowball.`;
+    } else {
+      stratSub.textContent = `Snowball costs $${fmt(Math.abs(diff),2)} more, but clears your first debt sooner.`;
+    }
+  } else stratSub.textContent = '';
+
+  // The concrete "what do I attack" answer.
+  const byId = Object.fromEntries(S.debts.map(d=>[d.id,d]));
+  orderEl.innerHTML = current.order.length ? `
+    <div class="po-hd">Payoff Order</div>
+    <div class="po-list">
+      ${current.order.map((o,i)=>{
+        const d = byId[o.id]; if (!d) return '';
+        return `<div class="po-row">
+          <span class="po-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="po-name">${esc(d.label||'Unnamed')}</span>
+          <span class="po-apr">${(+d.apr||0).toFixed(2)}%</span>
+          <span class="po-bal">$${fmt(+d.balance||0,2)}</span>
+          <span class="po-mm">${monthLabel(o.mm)}</span>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+}
+
+// Restore the strategy inputs from state (load, import). Kept out of
+// renderStrategy so a re-render never overwrites a field mid-typing.
+function initStrategyUI() {
+  const extra = +S.extraPmt||0;
+  const num = document.getElementById('extra-num');
+  const sld = document.getElementById('extra-slider');
+  num.value = extra || '';
+  if (extra > +sld.max) sld.max = Math.ceil(extra/500)*500;
+  sld.value = extra;
 }
 
 /* ── Stocks ───────────────────────────────────────────────────────────────── */
@@ -1346,31 +2235,42 @@ function initStocksUI() {
 /* ── Events ───────────────────────────────────────────────────────────────── */
 
 function recalc() {
-  R = calcAll(); renderMetrics(); renderProgress(); renderTable();
+  R = calcAll(); renderMetrics(); renderProgress(); renderTable(); renderStrategy();
 }
 
 function bindEvents() {
 
   // Onboarding
   const obName = document.getElementById('ob-name');
+  // The name is now just a display label on an account-owned tracker — the
+  // account is the identity. Typing a different name relabels your own tracker
+  // and can no longer surface anyone else's data.
   function submitName() {
     const name = obName.value.trim();
     if (!name) { obName.focus(); return; }
     S.userName = name;
-    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
+    scheduleSave();
     document.getElementById('dash-title').textContent = `${name}'s tracker.`;
     document.body.classList.add('dashboard-entering');
     show('dashboard');
     render();
+    initStrategyUI();
     initStocksUI();
     setTimeout(() => document.body.classList.remove('dashboard-entering'), 1300);
   }
   document.getElementById('ob-btn').addEventListener('click', submitName);
   obName.addEventListener('keydown', e=>{ if(e.key==='Enter') submitName(); });
 
+  // Auth
+  document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
+  document.getElementById('auth-toggle').addEventListener('click', ()=>
+    setAuthMode(authMode === 'signin' ? 'signup' : 'signin'));
+  document.getElementById('auth-forgot').addEventListener('click', handleForgot);
+  document.getElementById('signout-btn').addEventListener('click', armSignOut);
+
   // Add debt
   document.getElementById('add-debt').addEventListener('click', ()=>{
-    S.debts.push({id:uid(),label:'',type:'credit_card',origBal:0,balance:0,apr:0,target:S.globalTarget});
+    S.debts.push({id:uid(),label:'',type:'credit_card',origBal:0,balance:0,apr:0,minPmt:0,target:S.globalTarget});
     renderDebts(); scheduleSave();
     setTimeout(()=>{
       const cs=document.querySelectorAll('.debt-card');
@@ -1417,12 +2317,19 @@ function bindEvents() {
       card.querySelector('.dc-label').placeholder = T_PH[debt.type]||'Debt name';
     } else if (e.target.matches('.debt-bal')) {
       const val = +e.target.value||0;
-      if (debt.origBal===0 && val>0) {
+      // Record the starting balance only once the field is committed ('change'
+      // fires on blur/Enter). Doing it on 'input' captured the first keystroke,
+      // so typing 22000 stored a starting balance of 2. Also lift a starting
+      // balance that is below the current one, which repairs debts saved
+      // under that bug when their balance is re-entered.
+      if (e.type === 'change' && val > 0 && val > (+debt.origBal||0)) {
         debt.origBal = val;
         const ov = card.querySelector('.orig-val');
         if (ov) ov.textContent = '$'+fmt(val,2);
       }
       debt.balance = val;
+      const minInp = card.querySelector('.debt-min');
+      if (minInp) minInp.placeholder = fmt(suggestedMin(debt),0);
       const off = val<=0 && debt.origBal>0;
       const wasOff = card.classList.contains('paid-off');
       card.classList.toggle('paid-off', off);
@@ -1443,6 +2350,8 @@ function bindEvents() {
       debt.apr = val;
       card.querySelector('.apr-num').value = val.toFixed(2);
       card.querySelector('.apr-disp').textContent = val.toFixed(2)+'%';
+    } else if (e.target.matches('.debt-min')) {
+      debt.minPmt = Math.max(0, +e.target.value||0);
     } else if (e.target.matches('.debt-target')) {
       debt.target = e.target.value;
     } else return;
@@ -1512,6 +2421,41 @@ function bindEvents() {
     S.expenses=S.expenses.filter(s=>s.id!==r.dataset.id);
     r.classList.add('out'); setTimeout(()=>{ r.remove(); recalc(); scheduleSave(); },200);
   });
+
+  // Planning mode
+  document.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if (S.mode === btn.dataset.mode) return;
+      S.mode = btn.dataset.mode;
+      recalc(); scheduleSave();
+    });
+  });
+
+  // Strategy
+  document.querySelectorAll('.strat-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if (S.strategy === btn.dataset.strategy) return;
+      S.strategy = btn.dataset.strategy;
+      recalc(); scheduleSave();
+    });
+  });
+
+  // Extra payment — number and slider stay in sync.
+  const extraNum = document.getElementById('extra-num');
+  const extraSld = document.getElementById('extra-slider');
+  function setExtra(val, syncNum, syncSld) {
+    S.extraPmt = Math.max(0, +val||0);
+    if (syncNum) extraNum.value = S.extraPmt || '';
+    if (syncSld) extraSld.value = Math.min(+extraSld.max, S.extraPmt);
+    recalc(); scheduleSave();
+  }
+  extraNum.addEventListener('input', e=>{
+    // Let the slider's ceiling follow a larger typed value.
+    const v = Math.max(0, +e.target.value||0);
+    if (v > +extraSld.max) extraSld.max = Math.ceil(v/500)*500;
+    setExtra(v, false, true);
+  });
+  extraSld.addEventListener('input', e=>setExtra(e.target.value, true, false));
 
   // Table tabs
   document.getElementById('tab-bar').addEventListener('click', e=>{
@@ -1591,15 +2535,16 @@ function bindEvents() {
           alert("That doesn't look like a Debt Tracker backup file.");
           return;
         }
-        if (!confirm('Restoring will replace all data currently in this tracker. Continue?')) return;
+        if (!confirm('Restoring will replace all data currently in this tracker, on every device signed into this account. Continue?')) return;
         S = {...DEF, ...data};
-        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch{}
+        scheduleSave();
+        pushTracker();                       // don't wait out the debounce
         document.getElementById('dash-title').textContent = `${S.userName||'Your'}'s tracker.`;
         document.getElementById('sal-inp').value = S.salary || '';
         activeTab = 'all';
         render();
+        initStrategyUI();
         initStocksUI();
-        flashSaved();
       } catch {
         alert('Could not read that file — it may be corrupted.');
       }
@@ -1611,21 +2556,40 @@ function bindEvents() {
 
 /* ── Init ─────────────────────────────────────────────────────────────────── */
 
-S = load();
-
-if (S.userName) {
-  document.body.classList.add('no-transition');
-  document.getElementById('dash-title').textContent = `${S.userName}'s tracker.`;
-  if (S.salary) document.getElementById('sal-inp').value = S.salary;
-  show('dashboard');
-  render();
-  initStocksUI();
-  requestAnimationFrame(() => document.body.classList.remove('no-transition'));
-} else {
-  show('onboarding');
-}
-
+S = {...DEF};
 bindEvents();
+
+(async function boot() {
+  if (!CONFIGURED) {
+    document.getElementById('auth-unconfigured').hidden = false;
+    document.getElementById('auth-main').hidden = true;
+    document.getElementById('preview-wrap').hidden = false;
+    document.getElementById('signout-btn').hidden = true;
+    document.getElementById('preview-btn').addEventListener('click', ()=>
+      enterApp({id:'local-preview', email:'Preview mode — not synced'}));
+    show('auth');
+    return;
+  }
+
+  show('boot');
+  setAuthMode('signin');
+
+  try {
+    const {data:{session}} = await sb.auth.getSession();
+    if (session?.user) { await enterApp(session.user, {restoring: true}); return; }
+  } catch { /* fall through to the sign-in screen */ }
+
+  show('auth');
+  document.getElementById('auth-email').focus();
+})();
+
+// Keep the app honest if the session ends elsewhere (expiry, sign-out in
+// another tab). Ignore the initial and refresh events so we don't re-enter.
+if (CONFIGURED) {
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT' && currentUser) location.reload();
+  });
+}
 </script>
 </body>
 </html>
